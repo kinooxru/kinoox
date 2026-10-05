@@ -1,0 +1,247 @@
+// ─────────────────────────────────────────────────────────────
+//  KINOOX — схема базы данных (PostgreSQL 16)
+//  Prisma ORM
+// ─────────────────────────────────────────────────────────────
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Перечисления
+// ─────────────────────────────────────────────────────────────
+
+enum TitleType {
+  movie
+  serial
+  cartoon
+  anime
+}
+
+enum TitleStatus {
+  ongoing
+  released
+  announced
+}
+
+enum BookmarkStatus {
+  watching
+  planned
+  completed
+  dropped
+  on_hold
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Контент
+// ─────────────────────────────────────────────────────────────
+
+model Title {
+  id            Int         @id @default(autoincrement())
+  kpId          Int?        @unique @map("kp_id")
+  imdbId        String?     @unique @map("imdb_id")
+  type          TitleType
+  title         String
+  originalTitle String?     @map("original_title")
+  description   String?     @db.Text
+  posterUrl     String      @map("poster_url") @db.Text
+  backdropUrl   String?     @map("backdrop_url") @db.Text
+  year          Int
+  ratingKp      Decimal?    @map("rating_kp") @db.Decimal(3, 1)
+  ratingImdb    Decimal?    @map("rating_imdb") @db.Decimal(3, 1)
+  duration      Int?
+  countries     String[]
+  genres        String[]
+  actors        String[]
+  directors     String[]
+  status        TitleStatus @default(released)
+  /// Число просмотров — для сортировки «популярное»
+  viewsCount    Int         @default(0) @map("views_count")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  episodes     Episode[]
+  sources      Source[]
+  comments     Comment[]
+  bookmarks    Bookmark[]
+  viewsHistory ViewHistory[]
+
+  @@index([type, status])
+  @@index([year])
+  @@index([viewsCount])
+  @@index([ratingKp])
+  @@map("titles")
+}
+
+model Episode {
+  id      Int     @id @default(autoincrement())
+  titleId Int     @map("title_id")
+  season  Int
+  episode Int
+  name    String?
+  /// ID серии на стороне балансера
+  externalId String? @map("external_id")
+
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([titleId, season, episode])
+  @@index([titleId])
+  @@map("episodes")
+}
+
+model Source {
+  id         Int    @id @default(autoincrement())
+  titleId    Int    @map("title_id")
+  /// vibix | veoveo
+  balancer   String
+  balancerId String @map("balancer_id")
+  quality    String
+  /// Меньше значение — выше приоритет
+  priority   Int    @default(0)
+
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([titleId, balancer])
+  @@index([titleId, priority])
+  @@map("sources")
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Пользователи
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String   @map("password_hash")
+  avatarUrl     String?  @map("avatar_url") @db.Text
+  role          String   @default("user")
+  /// Хэш refresh-токена для отзыва сессии
+  refreshTokenHash String? @map("refresh_token_hash")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  bookmarks    Bookmark[]
+  comments     Comment[]
+  viewsHistory ViewHistory[]
+  searchQueries SearchQuery[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Bookmark {
+  id          Int            @id @default(autoincrement())
+  userId      Int            @map("user_id")
+  titleId     Int            @map("title_id")
+  status      BookmarkStatus @default(watching)
+  lastEpisode Int?           @map("last_episode")
+  lastSeason  Int?           @map("last_season")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, titleId])
+  @@index([userId, status])
+  @@map("bookmarks")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  titleId   Int      @map("title_id")
+  userId    Int      @map("user_id")
+  parentId  Int?     @map("parent_id")
+  text      String   @db.Text
+  /// Количество лайков (ripple-анимация в интерфейсе)
+  likesCount Int     @default(0) @map("likes_count")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title  Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([titleId, createdAt])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model ViewHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  titleId   Int      @map("title_id")
+  season    Int?
+  episode   Int?
+  watchedAt DateTime @default(now()) @map("watched_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title Title @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  /// Один тайтл — одна запись истории, время обновляется
+  @@unique([userId, titleId])
+  @@index([userId, watchedAt])
+  @@map("view_history")
+}
+
+model SearchQuery {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  query     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([query])
+  @@map("search_queries")
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Дистрибуция приложений
+// ─────────────────────────────────────────────────────────────
+
+model AppVersion {
+  id         Int      @id @default(autoincrement())
+  /// android | ios | windows | macos | linux
+  platform   String
+  version    String
+  /// Прямой URL на файл сборки
+  url        String   @db.Text
+  size       String
+  minimumOs  String   @map("minimum_os")
+  changelog  String[]
+  releaseDate DateTime @default(now()) @map("release_date")
+  isActive   Boolean  @default(true) @map("is_active")
+  downloadsCount Int   @default(0) @map("downloads_count")
+
+  @@unique([platform, version])
+  @@index([platform, isActive])
+  @@map("app_versions")
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Синхронизация с балансерами
+// ─────────────────────────────────────────────────────────────
+
+model SyncLog {
+  id          Int      @id @default(autoincrement())
+  balancer    String
+  status      String
+  itemsSynced Int      @default(0) @map("items_synced")
+  error       String?  @db.Text
+  startedAt   DateTime @default(now()) @map("started_at")
+  finishedAt  DateTime? @map("finished_at")
+
+  @@index([balancer, startedAt])
+  @@map("sync_logs")
+}

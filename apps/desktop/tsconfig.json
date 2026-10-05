@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "types": [],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@kinoox/api-client": ["../../packages/api-client/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "*.ts"],
+  "exclude": ["node_modules", "dist", "src-tauri"]
+}

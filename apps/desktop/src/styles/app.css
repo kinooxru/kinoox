@@ -1,0 +1,489 @@
+/**
+ * KINOOX Desktop — токены дизайн-системы «Cinematic Flow».
+ * Значения совпадают с packages/design-system.
+ */
+
+:root {
+  --color-void: #06070a;
+  --color-abyss: #0c0e14;
+  --color-surface: #131620;
+  --color-frost: #1c2030;
+
+  --color-flux-from: #ff3d6e;
+  --color-flux-to: #ff6b3d;
+  --color-prism-from: #7c5cff;
+  --color-prism-to: #5c8cff;
+  --color-aura-from: #00e5c7;
+  --color-aura-to: #00b8e5;
+
+  --color-text-primary: #f5f7fa;
+  --color-text-secondary: #8b92a8;
+  --color-text-muted: #4a5068;
+
+  --gradient-flux: linear-gradient(135deg, #ff3d6e 0%, #ff6b3d 100%);
+  --gradient-prism: linear-gradient(135deg, #7c5cff 0%, #5c8cff 100%);
+  --gradient-aura: linear-gradient(135deg, #00e5c7 0%, #00b8e5 100%);
+  --gradient-flux-prism: linear-gradient(90deg, #ff3d6e 0%, #7c5cff 100%);
+
+  --glow-flux: 0 0 40px rgba(255, 61, 110, 0.3);
+  --glow-prism: 0 0 40px rgba(124, 92, 255, 0.25);
+  --blur-glass: blur(20px) saturate(1.5);
+
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-h1: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h2: clamp(1.25rem, 2vw, 1.75rem);
+  --text-h3: clamp(1.125rem, 1.5vw, 1.375rem);
+  --text-body: clamp(0.875rem, 1vw, 1rem);
+  --text-small: clamp(0.75rem, 0.8vw, 0.875rem);
+
+  --radius-card: 20px;
+  --radius-panel: 28px;
+  --radius-control: 12px;
+
+  --ease-flow: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 180ms;
+  --duration-base: 260ms;
+  --duration-screen: 400ms;
+
+  --titlebar-height: 40px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ── Кастомный заголовок окна ───────────────────────────────── */
+
+.titlebar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 0 16px;
+  background: rgba(12, 14, 20, 0.72);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+  border-bottom: 1px solid var(--color-frost);
+  z-index: 100;
+  -webkit-app-region: drag;
+}
+
+.titlebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  font-size: 13px;
+}
+
+.titlebar__logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--gradient-flux);
+}
+
+.titlebar__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__button {
+  width: 36px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  transition: background-color var(--duration-fast) var(--ease-flow);
+}
+
+.titlebar__button:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.titlebar__button--close:hover {
+  background: rgba(255, 69, 58, 0.85);
+  color: #fff;
+}
+
+/* ── Основная область ───────────────────────────────────────── */
+
+.app {
+  height: 100%;
+  padding-top: var(--titlebar-height);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px 48px;
+}
+
+.app__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.app__title {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-frost);
+  background: var(--color-abyss);
+  min-width: 280px;
+}
+
+.search input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-small);
+}
+
+.search input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-frost);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+/* ── Секции и сетки ─────────────────────────────────────────── */
+
+.section {
+  margin-bottom: 36px;
+}
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  margin: 0;
+}
+
+.section__hint {
+  font-size: var(--text-small);
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+/* ── Карточка тайтла ────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  background: var(--color-abyss);
+  box-shadow: inset 0 0 0 1px rgba(245, 247, 250, 0.06);
+  cursor: pointer;
+  transition:
+    transform var(--duration-base) var(--ease-flow),
+    box-shadow var(--duration-base) var(--ease-flow);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.65),
+    0 0 40px rgba(255, 61, 110, 0.18),
+    0 0 60px rgba(124, 92, 255, 0.14);
+}
+
+.card__poster {
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  object-fit: cover;
+  background: var(--color-surface);
+  display: block;
+}
+
+.card__veil {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(6, 7, 10, 0) 0%, rgba(6, 7, 10, 0.9) 100%);
+  pointer-events: none;
+}
+
+.card__info {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 12px;
+}
+
+.card__name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card__meta {
+  margin: 4px 0 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.card__rating {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card__rating--high {
+  background: var(--gradient-flux);
+  color: var(--color-void);
+}
+
+.card__rating--low {
+  background: rgba(74, 80, 104, 0.65);
+}
+
+/* ── Кнопки ─────────────────────────────────────────────────── */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: var(--text-small);
+  transition:
+    filter var(--duration-fast) var(--ease-flow),
+    box-shadow var(--duration-fast) var(--ease-flow);
+}
+
+.button--flux {
+  background: var(--gradient-flux);
+  color: var(--color-void);
+}
+
+.button--flux:hover {
+  filter: brightness(1.1);
+  box-shadow: var(--glow-flux);
+}
+
+.button--glass {
+  background: rgba(19, 22, 32, 0.6);
+  border: 1px solid var(--color-frost);
+  color: var(--color-text-primary);
+}
+
+.button--glass:hover {
+  border-color: rgba(255, 61, 110, 0.45);
+}
+
+/* ── Мини-плеер ─────────────────────────────────────────────── */
+
+.mini-body {
+  background: transparent;
+}
+
+.mini {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-void);
+  border: 1px solid var(--color-frost);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.mini__video {
+  flex: 1;
+  background: #000;
+  border: none;
+  width: 100%;
+}
+
+.mini__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(12, 14, 20, 0.88);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+}
+
+.mini__name {
+  flex: 1;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini__button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+}
+
+.mini__button:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.mini__progress {
+  height: 3px;
+  background: var(--color-frost);
+}
+
+.mini__progress-fill {
+  height: 100%;
+  background: var(--gradient-flux-prism);
+}
+
+/* ── Состояния ──────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, #131620 0%, #1c2030 50%, #131620 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1400ms linear infinite;
+  border-radius: var(--radius-card);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.empty {
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-frost);
+  border-radius: var(--radius-card);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-frost);
+  border-top-color: var(--color-flux-from);
+  animation: spin 700ms linear infinite;
+  margin: 48px auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-frost);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "noEmit": true,
+    "verbatimModuleSyntax": false
+  },
+  // seed.ts входит в проект, чтобы редактор видел типы Node.js (process, console).
+  // При сборке он исключается отдельным tsconfig.build.json — там rootDir: src.
+  "include": ["src/**/*.ts", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

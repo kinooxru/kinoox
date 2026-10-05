@@ -1,0 +1,26 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Next.js и React Native требуют hoisting части зависимостей
+# (RN Metro не умеет работать со строгим pnpm-хранилищем).
+shamefully-hoist: false
+node-linker: isolated
+strict-peer-dependencies: false
+auto-install-peers: true
+
+# Нативные пакеты, которые не должны подниматься в корень
+neverBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - "prisma"
+  - "esbuild"
+  - "sharp"
+
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - "prisma"
+  - "esbuild"
+  - "sharp"
+  - "unrs-resolver"

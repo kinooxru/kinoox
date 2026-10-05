@@ -1,0 +1,139 @@
+Кастомный совместный просмотр
+Создайте свою реализацию watch-party на основе sync-lib.js: свой интерфейс, свои сообщения, свою логику.
+Как устроена библиотека
+sync-lib.js делает три вещи:
+
+🔌
+Подключение
+Подключается к серверу синхронизации по WebSocket и автоматически переподключается при обрыве
+
+📡
+Отправка
+Слушает события плеера и передаёт их другим зрителям: play, pause, seek, смена серии
+
+🎯
+Приём
+Принимает команды от других зрителей и выполняет их в плеере — синхронизация действий
+
+Всё остальное — виджет, чат, кнопки — это только интерфейс. Его можно заменить своим.
+
+Параметры конструктора
+Обязательный параметр — только iframe. Остальные — опциональные.
+
+new WatchParty({
+    iframe: '#vibix-frame-id',    // CSS-селектор iframe (обязательно)
+    roomId: 'my_room',            // ID комнаты. Если не указать — сгенерируется сам
+    username: 'Иван',             // Имя зрителя. Если не указать — сгенерируется сам
+    wsServer: 'wss://sync.videoframe2.com', // Адрес сервера (обычно не меняется)
+    reconnectInterval: 3000,      // Пауза между попытками переподключения, мс (по умолч. 3000)
+    syncThreshold: 2,             // Допустимое расхождение времени, сек (по умолч. 2)
+    heartbeatInterval: 30000,     // Как часто шлём ping серверу, мс (по умолч. 30000)
+    maxReconnectAttempts: 10,     // Сколько раз переподключаться (по умолч. 10)
+    debug: true                   // Показывать логи в консоли (по умолч. false)
+});
+Обмен сообщениями
+Библиотека общается с плеером через postMessage, а с сервером — через WebSocket.
+
+// Клиент → Плеер (команда)
+{type: 'playerCommand', command: 'seek', value: 60, timestamp: 1717000000}
+
+// Плеер → Клиент (событие)
+{type: 'playerEvent', event: 'pause', time: 45, timestamp: 1717000001}
+
+// Клиент → Сервер (сообщение)
+{type: 'sync', event: 'pause', time: 45}
+
+// Сервер → Клиент (сообщение)
+{type: 'sync', event: 'pause', time: 45, username: 'Иван'}
+Команды плееру
+Отправляются методом sendCommandToPlayer(command, value). Все команды:
+
+party.sendCommandToPlayer('start');                  // Запустить с рекламой
+party.sendCommandToPlayer('play');                   // Воспроизвести
+party.sendCommandToPlayer('pause');                  // Пауза
+party.sendCommandToPlayer('toggle');                 // Пауза/воспроизведение
+party.sendCommandToPlayer('seek', 120);              // Перемотать на 120 сек
+party.sendCommandToPlayer('find', 1024);             // Переключить на файл по ID
+party.sendCommandToPlayer('audiotrack', 4);          // Сменить озвучку
+party.sendCommandToPlayer('quality', '1080p');       // Сменить качество
+party.sendCommandToPlayer('getState');               // Запросить состояние плеера
+События плеера
+Плеер присылает события. Библиотека обрабатывает их сама и синхронизирует с другими зрителями.
+
+// Основные события, которые стоит знать:
+'ready'             // Плеер готов
+'start'             // Начат просмотр (isInitialStart: true — запуск с рекламы)
+'play'              // Воспроизведение
+'pause'             // Пауза
+'seek'              // Перемотка
+'timeupdate'        // Обновление времени
+'file'              // Смена файла (серия)
+'playlist_changed'  // Смена сезона/озвучки
+'audiotrack_changed'// Смена аудиодорожки
+'quality_changed'   // Смена качества
+'end'               // Видео закончилось
+Пример 1: Минимальная интеграция без виджета
+Если виджет (панель справа) не нужен — используйте библиотеку как «мотор» синхронизации и добавьте свои кнопки:
+
+<ins id="player"
+     data-publisher-id="674093403"
+     data-type="movie"
+     data-id="1"
+     data-sync="true"></ins>
+
+<script src="https://sync.videoframe2.com/sync-lib.js"></script>
+<script>
+const party = new WatchParty({ iframe: '#player', debug: true });
+
+// Свои кнопки управления
+document.getElementById('btn-play').onclick = () => party.sendCommandToPlayer('play');
+document.getElementById('btn-pause').onclick = () => party.sendCommandToPlayer('pause');
+document.getElementById('btn-seek').onclick = () => party.sendCommandToPlayer('seek', 60);
+</script>
+Пример 2: Свой чат
+Чат работает через сообщения chat. Можно подписаться на них и отображать в своём интерфейсе:
+
+const party = new WatchParty({ iframe: '#player' });
+
+// Отправить своё сообщение
+function sendChat(text) {
+    party.send({ type: 'chat', message: text });
+}
+
+// Поймать чужие сообщения
+document.addEventListener('message', (e) => {
+    const data = e.data;
+    if (data && data.type === 'chat') {
+        console.log(data.username + ': ' + data.message);
+        showInMyChat(data.username, data.message);
+    }
+});
+Пример 3: Свой обработчик синхронизации
+Можно перехватить события синхронизации до того, как библиотека их выполнит, и добавить свою логику:
+
+const party = new WatchParty({ iframe: '#player' });
+
+// Слушаем события от плеера
+window.addEventListener('message', (e) => {
+    if (e.source !== document.querySelector('#player').contentWindow) return;
+    const data = e.data;
+    if (data && data.type === 'playerEvent') {
+        console.log('Событие плеера:', data.event, data.time);
+        // Своя логика, например подсчёт времени просмотра
+        if (data.event === 'play') trackViewStart();
+    }
+});
+Полезные методы
+party.roomId;                    // Текущий ID комнаты
+party.username;                  // Имя зрителя
+party.isHost;                    // true — этот зритель ведущий
+
+party.copyInviteLink();          // Скопировать ссылку-приглашение в буфер
+party.requestSync();             // Запросить синхронизацию у ведущего
+party.sendCurrentState();        // Отправить своё состояние (только ведущий)
+party.destroy();                 // Выйти из комнаты и убрать виджет
+Особенности
+Роль (ведущий/зритель) назначает сервер. Передавать isHost в конструкторе не нужно — это подсказка, не приказ.
+Если roomId не указан и в URL нет ?room= — комната создастся автоматически, а ссылку покажет виджет.
+Пока соединение не установлено, все исходящие сообщения копятся в очереди и уходят после подключения.
+Расхождение времени меньше syncThreshold (по умолч. 2 сек) игнорируется — это защита от «дёрганий» при нестабильном интернете.

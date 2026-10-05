@@ -1,0 +1,2337 @@
+Vibix API Documentation 1.1.0  OAS 3.0
+
+Publisher
+
+
+GET
+/api/v1/publisher/statistics
+Get publisher statistics with flexible filtering
+
+
+Returns aggregated statistics for the authenticated publisher. Supports grouping by date, domain, or country.
+
+Parameters
+Try it out
+Name	Description
+date_from *
+string($date)
+(query)
+Start date
+
+2026-06-01
+date_to *
+string($date)
+(query)
+End date (max 90 days from date_from)
+
+2026-06-28
+group_by
+string
+(query)
+Group results by
+
+Available values : date, domain, country
+
+Default value : date
+
+
+date
+domain_id[]
+array[integer]
+(query)
+Filter by domain IDs (multiple allowed)
+
+country_id[]
+array[integer]
+(query)
+Filter by country IDs (multiple allowed)
+
+sort_by
+string
+(query)
+Column to sort by
+
+Available values : player_starts, ads_views, ads_clicks, revenue, banner_show, banner_click, brand_show, brand_click, sticker_show, sticker_click, flyroll_show, flyroll_click
+
+
+--
+sort_dir
+string
+(query)
+Sort direction
+
+Available values : asc, desc
+
+Default value : desc
+
+
+desc
+per_page
+integer
+(query)
+Items per page (10-500)
+
+Default value : 50
+
+50
+page
+integer
+(query)
+Page number
+
+Default value : 1
+
+1
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "group_value": "example.com",
+        "player_starts": 12345,
+        "ads_views": 10000,
+        "ads_clicks": 500,
+        "revenue": 125.5,
+        "banner_show": 8000,
+        "banner_click": 200,
+        "brand_show": 5000,
+        "brand_click": 150,
+        "sticker_show": 3000,
+        "sticker_click": 80,
+        "flyroll_show": 2000,
+        "flyroll_click": 40
+      }
+    ],
+    "totals": {
+      "player_starts": 500000,
+      "ads_views": 400000,
+      "ads_clicks": 20000,
+      "revenue": 5020,
+      "banner_show": 320000,
+      "banner_click": 8000,
+      "brand_show": 200000,
+      "brand_click": 6000,
+      "sticker_show": 120000,
+      "sticker_click": 3200,
+      "flyroll_show": 80000,
+      "flyroll_click": 1600
+    },
+    "pagination": {
+      "current_page": 1,
+      "per_page": 50,
+      "total": 150,
+      "last_page": 3
+    }
+  }
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/kp/{kpId}
+Получить загруженное видео по Киопоиск ID
+
+
+Parameters
+Try it out
+Name	Description
+kpId *
+integer
+(path)
+Kinopoisk ID of the video
+
+Example : 484488
+
+484488
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 100,
+  "name": "string",
+  "name_rus": "string",
+  "name_eng": "string",
+  "name_original": "string",
+  "type": "string",
+  "year": 0,
+  "kp_id": 484488,
+  "imdb_id": "string",
+  "kp_rating": 0,
+  "kp_votes": 0,
+  "imdb_rating": 0,
+  "imdb_votes": 0,
+  "iframe_url": "string",
+  "embed_code": "string",
+  "persons": [
+    {
+      "id": 0,
+      "name": "string",
+      "name_eng": "string",
+      "name_anyway": "string",
+      "occupation": "string"
+    }
+  ],
+  "voiceovers": [
+    {
+      "id": 0,
+      "name": "string"
+    }
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "code": "string",
+      "name": "string"
+    }
+  ],
+  "poster_url": "string",
+  "backdrop_url": "string",
+  "duration": 0,
+  "quality": "string",
+  "genre": [
+    "string"
+  ],
+  "country": [
+    "string"
+  ],
+  "description": "string",
+  "description_short": "string",
+  "uploaded_at": "string"
+}
+No links
+404	
+Video not found
+
+No links
+500	
+Internal server error
+
+No links
+
+GET
+/api/v1/publisher/videos/imdb/{imdbId}
+Get video by IMDB ID
+
+
+Parameters
+Try it out
+Name	Description
+imdbId *
+string
+(path)
+IMDB ID of the video
+
+Example : tt1527186
+
+tt1527186
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 100,
+  "name": "string",
+  "name_rus": "string",
+  "name_eng": "string",
+  "name_original": "string",
+  "type": "string",
+  "year": 0,
+  "kp_id": 484488,
+  "imdb_id": "string",
+  "kp_rating": 0,
+  "kp_votes": 0,
+  "imdb_rating": 0,
+  "imdb_votes": 0,
+  "iframe_url": "string",
+  "embed_code": "string",
+  "persons": [
+    {
+      "id": 0,
+      "name": "string",
+      "name_eng": "string",
+      "name_anyway": "string",
+      "occupation": "string"
+    }
+  ],
+  "voiceovers": [
+    {
+      "id": 0,
+      "name": "string"
+    }
+  ],
+  "tags": [
+    {
+      "id": 0,
+      "code": "string",
+      "name": "string"
+    }
+  ],
+  "poster_url": "string",
+  "backdrop_url": "string",
+  "duration": 0,
+  "quality": "string",
+  "genre": [
+    "string"
+  ],
+  "country": [
+    "string"
+  ],
+  "description": "string",
+  "description_short": "string",
+  "uploaded_at": "string"
+}
+No links
+404	
+Video not found
+
+No links
+500	
+Internal server error
+
+No links
+
+POST
+/api/v1/publisher/videos/search
+Search video by name
+
+
+Parameters
+Try it out
+Name	Description
+name *
+string
+(query)
+Name of the video
+
+name
+page
+integer
+(query)
+page
+
+Example : 1
+
+1
+limit
+integer
+(query)
+limit
+
+Example : 20
+
+20
+Responses
+Code	Description	Links
+200	
+Successful response
+
+No links
+404	
+Video not found
+
+No links
+500	
+Internal server error
+
+No links
+
+GET
+/api/v1/publisher/videos/links
+Получить список загруженных видео
+
+
+Parameters
+Try it out
+Name	Description
+type
+string
+(query)
+Type of video
+
+Available values : movie, serial
+
+
+--
+category[]
+array[integer]
+(query)
+Categories of the video
+
+year[]
+array[integer]
+(query)
+Years of release
+
+genre[]
+array[integer]
+(query)
+Genres of the video
+
+country[]
+array[integer]
+(query)
+Countries of the video
+
+tag[]
+array[integer]
+(query)
+Tags of the video
+
+voiceover[]
+array[integer]
+(query)
+Voiceovers of the video
+
+kp_id[]
+array[integer]
+(query)
+Kinopoisk IDs
+
+exist_kp_id
+boolean
+(query)
+Has Kinopoisk ID
+
+Default value : false
+
+
+true
+no_ads
+boolean
+(query)
+Video without embedded ads
+
+Default value : false
+
+
+true
+lgbt
+boolean
+(query)
+The video contains LGBT content
+
+Default value : false
+
+
+true
+is_uploaded
+boolean
+(query)
+The video available (uploaded)
+
+Default value : true
+
+
+true
+fields
+array[string]
+(query)
+Fields of the video
+
+Available values : id, name, name_rus, name_eng, name_original, type, year, kp_id, kinopoisk_id, imdb_id, kp_rating, imdb_rating, iframe_url, voiceovers, tags, poster_url, backdrop_url, quality, duration, genre, country, description, description_short, updated_at, uploaded_at
+
+--idnamename_rusname_engname_originaltypeyearkp_idkinopoisk_idimdb_idkp_ratingimdb_ratingiframe_urlvoiceoverstagsposter_urlbackdrop_urlqualitydurationgenrecountrydescriptiondescription_shortupdated_atuploaded_at
+page
+integer($int64)
+(query)
+Номер страницы
+
+Default value : 1
+
+1
+limit
+integer($int64)
+(query)
+Количество записей на странице
+
+Default value : 20
+
+20
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "string",
+      "name_rus": "string",
+      "name_eng": "string",
+      "name_original": "string",
+      "type": "string",
+      "year": 0,
+      "kp_id": 484488,
+      "imdb_id": "string",
+      "kp_rating": 0,
+      "kp_votes": 0,
+      "imdb_rating": 0,
+      "imdb_votes": 0,
+      "iframe_url": "string",
+      "embed_code": "string",
+      "persons": [
+        {
+          "id": 0,
+          "name": "string",
+          "name_eng": "string",
+          "name_anyway": "string",
+          "occupation": "string"
+        }
+      ],
+      "voiceovers": [
+        {
+          "id": 0,
+          "name": "string"
+        }
+      ],
+      "tags": [
+        {
+          "id": 0,
+          "code": "string",
+          "name": "string"
+        }
+      ],
+      "poster_url": "string",
+      "backdrop_url": "string",
+      "duration": 0,
+      "quality": "string",
+      "genre": [
+        "string"
+      ],
+      "country": [
+        "string"
+      ],
+      "description": "string",
+      "description_short": "string",
+      "uploaded_at": "string"
+    }
+  ],
+  "links": {
+    "first": "string",
+    "last": "string",
+    "prev": "string",
+    "next": "string"
+  },
+  "meta": {
+    "current_page": 0,
+    "from": 0,
+    "last_page": 0,
+    "links": [
+      {
+        "url": "string",
+        "label": "string",
+        "active": true
+      }
+    ],
+    "path": "string",
+    "per_page": 0,
+    "to": 0,
+    "total": 0
+  },
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/get_kpids
+Получить список kp_id
+
+
+Parameters
+Try it out
+Name	Description
+type
+string
+(query)
+Type of video
+
+Available values : movie, serial
+
+
+--
+category[]
+array[integer]
+(query)
+Categories of the video
+
+year
+integer
+(query)
+Year of release
+
+year
+page
+integer($int64)
+(query)
+Номер страницы
+
+Default value : 1
+
+1
+limit
+integer($int64)
+(query)
+Количество записей на странице
+
+Default value : 1000
+
+1000
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    0
+  ],
+  "success": true,
+  "message": "string",
+  "status": 0
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/categories
+Получить список категорий
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "Аниме"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/genres
+Получить список жанров
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "комедия",
+      "name_eng": "comedy"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/countries
+Получить список стран
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "Россия",
+      "name_eng": "Russia",
+      "code": "RU"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/tags
+Получить список тегов
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "Новинка",
+      "code": "novinka"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/voiceovers
+Получить список озвучек
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 100,
+      "name": "LostFilm"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/videos/occupations
+Получить список профессий коллектива съёмочной группы
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": "actor",
+      "name": "Актёры"
+    }
+  ],
+  "success": true,
+  "message": "string"
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+
+GET
+/api/v1/publisher/get_id
+Получить user_id
+
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "data": [
+    {
+      "id": 0
+    }
+  ],
+  "success": true,
+  "message": "string",
+  "status": 0
+}
+No links
+401	
+Unauthorized
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+403	
+Access denied
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+422	
+Validation failed
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+500	
+Internal server error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "success": false,
+  "message": "Error message",
+  "status": 444
+}
+No links
+Serials
+
+
+GET
+/api/v1/serials/kp/{kpId}
+Количество сезонов и серий по Киопоиск ID
+
+
+Parameters
+Try it out
+Name	Description
+kpId *
+integer
+(path)
+Kinopoisk ID of the video
+
+Example : 484488
+
+484488
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 100,
+  "name": "string",
+  "seasons": [
+    {
+      "name": "string",
+      "series": [
+        {
+          "id": 100,
+          "name": "string"
+        }
+      ]
+    }
+  ]
+}
+No links
+404	
+Video not found
+
+No links
+500	
+Internal server error
+
+No links
+
+GET
+/api/v1/serials/imdb/{imdbId}
+Количество сезонов и серий по IMDB ID
+
+
+Parameters
+Try it out
+Name	Description
+imdbId *
+string
+(path)
+IMDB ID of the video
+
+Example : tt1527186
+
+tt1527186
+Responses
+Code	Description	Links
+200	
+Successful response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "id": 100,
+  "name": "string",
+  "seasons": [
+    {
+      "name": "string",
+      "series": [
+        {
+          "id": 100,
+          "name": "string"
+        }
+      ]
+    }
+  ]
+}
+No links
+404	
+Video not found
+
+No links
+500	
+Internal server error
+
+No links
+
+Schemas
+Links{
+first	string($url)
+last	string($url)
+prev	string($url)
+nullable: true
+next	string($url)
+nullable: true
+}
+Meta{
+current_page	integer
+from	integer
+last_page	integer
+links	[{
+url	string($url)
+nullable: true
+label	string
+active	boolean
+}]
+path	string($url)
+per_page	integer
+to	integer
+total	integer
+}
+SuccessResponseProperties{
+data	{
+}
+success	boolean
+example: true
+message	string
+example: Success message
+status	integer
+example: 200
+}
+ErrorResponseProperties{
+success	boolean
+example: false
+message	string
+example: Error message
+status	integer
+example: 444
+}
+Domain{
+description:	
+Domain info
+
+id	integer
+example: 100
+Domain ID
+
+name	string
+example: yandex.ru
+nullable: true
+Domain name
+
+status	string
+example: new
+nullable: true
+Domain status
+
+last_error	string
+nullable: true
+Last error
+
+}
+Occupation Name{
+description:	
+Occupation Name
+
+id	integer
+example: actor
+ID Профессии
+
+name	string
+example: Актёры
+Название профессии
+
+}
+PlayerjsDesigns{
+description:	
+PlayerjsDesign info
+
+id	integer
+example: 100
+PlayerjsDesign ID
+
+name	string
+nullable: true
+PlayerjsDesign name
+
+prefix	string
+nullable: true
+PlayerjsDesign prefix
+
+}
+Profile Resource{
+description:	
+Profile resource representation
+
+name	string
+example: John Doe
+email	string
+example: john.doe@example.com
+sites	[
+example: List [ "example.com", "example.org" ]
+[...]]
+cpm	integer
+example: 100
+payment_protocol	string
+example: TRC20
+wallet	string
+example: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+copy_width	string
+example: 600px
+copy_height	string
+example: 200px
+copy_template	string
+example: {link}
+}
+Количество сезонов и серий{
+description:	
+Количество сезонов и серий
+
+id	integer
+example: 100
+ID видео
+
+name	string
+Название видео на русском либо на английском в случае если название на русском отсутствует
+
+seasons	[
+nullable: true
+Список сезонов
+
+{
+name	string
+Название сезона
+
+series	[
+Список серий
+
+{
+id	integer
+example: 100
+ID серии
+
+name	string
+Название серии
+
+}]
+}]
+}
+Profile Resource{
+description:	
+Profile resource representation
+
+name	string
+example: John Doe
+email	string
+example: john.doe@example.com
+sites	[
+example: List [ "example.com", "example.org" ]
+[...]]
+cpm	integer
+example: 100
+payment_protocol	string
+example: TRC20
+wallet	string
+example: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+copy_width	string
+example: 600px
+copy_height	string
+example: 200px
+copy_template	string
+example: {link}
+dle_allow_user_data	integer
+example: 0
+referral_code	string
+}
+User Trial{
+description:	
+User Trial
+
+id	integer
+example: 100
+ID User
+
+user_id	integer
+example: 100
+ID User
+
+email	string
+User email
+
+user_id_started_trial	integer
+example: 100
+ID User who started trial
+
+email_started_trial	string
+User email who started trial
+
+trial_comment	string
+Trial comment
+
+trial_status	string
+User trial status
+
+start_trial_at	string($date-time)
+end_trial_at	string($date-time)
+trial_day_left	integer
+trial_hour_left	string
+}
+User Trial{
+description:	
+User Trial
+
+id	integer
+example: 100
+ID User
+
+user_id	integer
+example: 100
+ID User
+
+email	string
+User email
+
+trial_status	string
+User trial status
+
+start_trial_at	string($date-time)
+end_trial_at	string($date-time)
+trials_days_total	integer
+trial_day_left	integer
+trial_hour_left	string
+}
+Video Name{
+description:	
+Video Name
+
+id	integer
+example: 100
+ID видео
+
+name	string
+example: Друзья и враги
+nullable: true
+Video name
+
+name_rus	string
+example: Друзья и враги
+nullable: true
+Video name russian
+
+name_eng	string
+example: Club Friday To Be Continued: Friend & Enemy
+nullable: true
+Video name english
+
+uploaded_episodes	[
+nullable: true
+Список сезонов
+
+{
+ID serial	[
+Список серий
+
+{
+ID season	[
+Список серий
+
+{
+ID voiceover	integer
+example: Date created
+ID серии
+
+}]
+}]
+}]
+}
+Video Name{
+description:	
+Video Name
+
+id	integer
+example: 100
+ID видео
+
+name	string
+example: Друзья и враги
+nullable: true
+Video name
+
+name_rus	string
+example: Друзья и враги
+nullable: true
+Video name russian
+
+name_eng	string
+example: Club Friday To Be Continued: Friend & Enemy
+nullable: true
+Video name english
+
+name_original	string
+example: Club Friday To Be Continued: Friend & Enemy
+nullable: true
+Video name original
+
+}
+Video News Feed{
+description:	
+Video News Feed
+
+id	integer
+example: 100
+ID видео
+
+name	string
+example: Дюна: Часть вторая (2024) [Профессиональный (дублированный)]
+nullable: true
+Video name
+
+kp_rating	number($float)
+nullable: true
+Рейтинг на Кинопоиске
+
+imdb_rating	number($float)
+nullable: true
+Рейтинг на IMDb
+
+added_date	string($date-time)
+}
+Voiceover Name{
+description:	
+Voiceover Name
+
+id	integer
+example: 100
+ID Voiceover
+
+name	string
+example: LostFilm
+nullable: true
+Voiceover name
+
+}
+Video Category{
+description:	
+Video Category
+
+id	integer
+example: 100
+ID Category
+
+name	string
+example: Аниме
+nullable: true
+Category name
+
+}
+Video country{
+description:	
+Video country
+
+id	integer
+example: 100
+ID Country
+
+name	string
+example: Россия
+nullable: true
+Country name
+
+name_eng	string
+example: Russia
+nullable: true
+Country name eng
+
+code	string
+example: RU
+nullable: true
+Country code
+
+}
+Video genre{
+description:	
+Video genre
+
+id	integer
+example: 100
+ID Genre
+
+name	string
+example: комедия
+nullable: true
+Genre name
+
+name_eng	string
+example: comedy
+nullable: true
+Genre name eng
+
+}
+Publisher Statistics Item{
+description:	
+Aggregated statistics row for one group
+
+group_value	string
+example: example.com
+Group label: date (d.m.Y), domain name, or country name
+
+player_starts	integer
+example: 12345
+Player starts count
+
+ads_views	integer
+example: 10000
+Adjusted ad views
+
+ads_clicks	integer
+example: 500
+Ad clicks
+
+revenue	number($float)
+example: 125.5
+Total revenue, rounded to 2 decimals
+
+banner_show	integer
+example: 8000
+Banner shows
+
+banner_click	integer
+example: 200
+Banner clicks
+
+brand_show	integer
+example: 5000
+Brand shows
+
+brand_click	integer
+example: 150
+Brand clicks
+
+sticker_show	integer
+example: 3000
+Sticker shows
+
+sticker_click	integer
+example: 80
+Sticker clicks
+
+flyroll_show	integer
+example: 2000
+Flyroll shows
+
+flyroll_click	integer
+example: 40
+Flyroll clicks
+
+}
+Publisher Statistics Totals{
+description:	
+Aggregated totals across the entire period (all pages)
+
+player_starts	integer
+example: 500000
+ads_views	integer
+example: 400000
+ads_clicks	integer
+example: 20000
+revenue	number($float)
+example: 5020
+banner_show	integer
+example: 320000
+banner_click	integer
+example: 8000
+brand_show	integer
+example: 200000
+brand_click	integer
+example: 6000
+sticker_show	integer
+example: 120000
+sticker_click	integer
+example: 3200
+flyroll_show	integer
+example: 80000
+flyroll_click	integer
+example: 1600
+}
+Publisher Statistics Pagination{
+current_page	integer
+example: 1
+per_page	integer
+example: 50
+total	integer
+example: 150
+last_page	integer
+example: 3
+}
+Publisher Statistics Response{
+success	boolean
+example: true
+data	{
+items	[Publisher Statistics Item{
+description:	
+Aggregated statistics row for one group
+
+group_value	string
+example: example.com
+Group label: date (d.m.Y), domain name, or country name
+
+player_starts	integer
+example: 12345
+Player starts count
+
+ads_views	integer
+example: 10000
+Adjusted ad views
+
+ads_clicks	integer
+example: 500
+Ad clicks
+
+revenue	number($float)
+example: 125.5
+Total revenue, rounded to 2 decimals
+
+banner_show	integer
+example: 8000
+Banner shows
+
+banner_click	integer
+example: 200
+Banner clicks
+
+brand_show	integer
+example: 5000
+Brand shows
+
+brand_click	integer
+example: 150
+Brand clicks
+
+sticker_show	integer
+example: 3000
+Sticker shows
+
+sticker_click	integer
+example: 80
+Sticker clicks
+
+flyroll_show	integer
+example: 2000
+Flyroll shows
+
+flyroll_click	integer
+example: 40
+Flyroll clicks
+
+}]
+totals	Publisher Statistics Totals{
+description:	
+Aggregated totals across the entire period (all pages)
+
+player_starts	integer
+example: 500000
+ads_views	integer
+example: 400000
+ads_clicks	integer
+example: 20000
+revenue	number($float)
+example: 5020
+banner_show	integer
+example: 320000
+banner_click	integer
+example: 8000
+brand_show	integer
+example: 200000
+brand_click	integer
+example: 6000
+sticker_show	integer
+example: 120000
+sticker_click	integer
+example: 3200
+flyroll_show	integer
+example: 80000
+flyroll_click	integer
+example: 1600
+}
+pagination	Publisher Statistics Pagination{
+current_page	integer
+example: 1
+per_page	integer
+example: 50
+total	integer
+example: 150
+last_page	integer
+example: 3
+}
+}
+}
+Rkn Block Resource{
+description:	
+Данные о блокировке домена Роскомнадзором
+
+domain	string
+example: example.com
+Заблокированный домен
+
+status	string
+example: blocked
+Текущий статус блокировки
+
+first_blocked_at	string($date-time)
+example: 2026-03-15T10:00:00+03:00
+nullable: true
+Дата первой фиксации блокировки (ISO 8601)
+
+last_checked_at	string($date-time)
+example: 2026-06-26T07:04:00+03:00
+nullable: true
+Дата последней проверки статуса (ISO 8601)
+
+unblocked_at	string($date-time)
+example: null
+nullable: true
+Дата разблокировки (ISO 8601)
+
+updated_at	string($date-time)
+example: 2026-06-26T07:04:00+03:00
+nullable: true
+Дата обновления записи (ISO 8601)
+
+}
+Video tag{
+description:	
+Video tag
+
+id	integer
+example: 100
+ID Country
+
+name	string
+example: Новинка
+nullable: true
+Tag name
+
+code	string
+example: novinka
+nullable: true
+Tag code
+
+}
+Video Link Resource{
+description:	
+Video Link resource representation
+
+id	integer
+example: 100
+ID видео
+
+name	string
+Название видео на русском либо на английском в случае если название на русском отсутствует
+
+name_rus	string
+nullable: true
+Название видео на русском
+
+name_eng	string
+nullable: true
+Название видео на английском
+
+name_original	string
+nullable: true
+Оригинальное название видео
+
+type	string
+Тип видео: movie|serial
+
+year	integer
+nullable: true
+Год выпуска видео
+
+kp_id	integer
+example: 484488
+nullable: true
+ID видео на Кинопоиске
+
+kinopoisk_id	integer
+example: 484488
+nullable: true
+deprecated: true
+ID видео на Кинопоиске
+
+imdb_id	string
+nullable: true
+ID видео на IMDb
+
+kp_rating	number($float)
+nullable: true
+Рейтинг на Кинопоиске
+
+kp_votes	integer
+nullable: true
+Количество оценок на Кинопоиске
+
+imdb_rating	number($float)
+nullable: true
+Рейтинг на IMDb
+
+imdb_votes	integer
+nullable: true
+Количество оценок на IMDb
+
+iframe_url	string
+URL фрейма видео
+
+embed_code	string
+Код тега
+
+persons	[
+nullable: true
+Список коллектива съёмочной группы
+
+{
+id	integer
+ID персоны
+
+name	string
+Имя
+
+name_eng	string
+Имя на английском
+
+name_anyway	string
+Имя
+
+occupation	string
+ID Профессии
+
+}]
+voiceovers	[
+nullable: true
+Список озвучек
+
+{
+id	integer
+ID озвучки
+
+name	string
+Название озвучки
+
+}]
+tags	[
+nullable: true
+Список тегов
+
+{
+id	integer
+ID тега
+
+code	string
+Код тега
+
+name	string
+Название тега
+
+}]
+poster_url	string
+nullable: true
+URL постера
+
+backdrop_url	string
+nullable: true
+URL широкоформатного постера
+
+duration	integer
+nullable: true
+Длительность видео в минутах
+
+quality	string
+Качество видео
+
+genre	[
+nullable: true
+Жанры видео
+
+string]
+country	[
+nullable: true
+Страны производства видео
+
+string]
+description	string
+nullable: true
+Описание видео
+
+description_short	string
+nullable: true
+Краткое описание видео
+
+updated_at	string
+nullable: true
+deprecated: true
+Дата и время добавления видео
+
+uploaded_at	string
+nullable: true
+Дата и время добавления видео
+
+}

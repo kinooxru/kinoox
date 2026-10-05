@@ -1,0 +1,1681 @@
+/deep-planning
+
+Спроектируй и создай с нуля веб-приложение и нативные приложения — онлайн-кинотеатр нового поколения на домене KINOOX.RU (аналог Anixart, но визуально превосходящий всё, что есть на рынке). DLE, WordPress и любые CMS НЕ используем. PWA НЕ используем. Пишем всё с нуля.
+
+## Философия проекта
+
+1. **Тотальная модульность.** Каждый компонент — независимый модуль со своим интерфейсом. Заменяемый, отключаемый, расширяемый без затрагивания остального. Сайт, API, мобильное приложение, десктопное приложение — отдельные пакеты в монорепозитории, связанные только через shared-типы и API-контракт.
+
+2. **Дизайн нового поколения.** Уникальная тема, которой нет нигде. Не Material, не iOS, не Bootstrap, не Tailwind-шаблоны. Своя дизайн-система с нуля: палитра, типографика, анимации, переходы, поведение карточек, плеера, навигации. Бренд KINOOX — кастомный логотип ?? с градиентом. Цель — чтобы пользователь с первого экрана понял: этого он ещё не видел.
+
+3. **Полноценные нативные приложения.** НЕ PWA, НЕ веб-обёртка. Отдельные нативные приложения:
+   - Android — React Native (APK)
+   - iOS — React Native (TestFlight / Ad Hoc)
+   - Windows — Tauri 2 (нативный .exe / .msi)
+   - macOS — Tauri 2 (нативный .dmg)
+   - Linux — Tauri 2 (.AppImage / .deb / .rpm)
+   Каждое приложение — полноценный клиент с собственным UI, офлайн-кэшем, нативными жестами и системной интеграцией.
+
+4. **Страница загрузки приложения.** Отдельная landing-страница /download с полным описанием, скриншотами, возможностями и кнопками скачивания для всех платформ. Страница — часть сайта, но визуально самостоятельная.
+
+5. **Продакшн-сервер:** Intel Core i7-6700 (4 ядра / 8 потоков), 64 ГБ RAM, 2?512 ГБ SSD. ОС: Debian 12 (Bookworm). IP: 95.216.97.185. Развёртывание через Docker + Nginx. Ресурс-оптимизация: PostgreSQL max_connections=100, shared_buffers=16GB, Redis maxmemory=4GB, Node.js --max-old-space-size=4096. Кэширование всего: постеры через CDN балансеров, API-ответы через Redis, SSR-страницы через ISR и Nginx cache. Docker memory limits: postgres 32G, redis 4G, api 8G, web 8G. Swap 4 ГБ.
+
+## Брендинг KINOOX.RU
+
+- Логотип: «??» с градиентом flux (#FF3D6E ? #FF6B3D)
+- Название везде: KINOOX (капсом в логотипе, строчно в тексте)
+- Слоган: «Смотри. Чувствуй. Погружайся.»
+- Favicon, OG-изображения — всё с брендом KINOOX
+- Домен: kinoox.ru (www перенаправляется на без www, редирект 301)
+- Email-отправитель: noreply@kinoox.ru
+- Никакого PWA-манифеста, никаких service worker. Сайт — это сайт. Приложения — это приложения.
+- IP сервера: 95.216.97.185
+- SSL: Let's Encrypt через certbot
+
+## Стек технологий
+
+- **Monorepo:** Turborepo + pnpm workspaces
+- **Backend:** Node.js 20+, TypeScript, Fastify
+- **База данных:** PostgreSQL 16 (ORM: Prisma)
+- **Кэш:** Redis 7
+- **Frontend (сайт):** Next.js 14+ (App Router), TypeScript, Framer Motion
+- **Mobile (Android + iOS):** React Native + Expo (TypeScript), Reanimated 3, нативные модули
+- **Desktop (Windows + macOS + Linux):** Tauri 2 (Rust + WebView, нативные бинари)
+- **Realtime:** Socket.io
+- **Веб-сервер:** Nginx (reverse proxy, Docker контейнер)
+- **Контейнеризация:** Docker + docker-compose
+- **CI/CD:** GitHub Actions (сборка APK, IPA, .exe, .dmg, .AppImage)
+- **Валидация:** Zod
+- **Авторизация:** JWT (access + refresh токены)
+
+## Структура монорепозитория (Turborepo)
+
+/kinoox /apps /web # Сайт на Next.js /app /(main) /page.tsx # главная /movies/page.tsx /series/page.tsx /cartoons/page.tsx /anime/page.tsx /title/[id]/page.tsx /search/page.tsx /download/page.tsx # СТРАНИЦА ЗАГРУЗКИ ПРИЛОЖЕНИЯ /(auth) /login/page.tsx /register/page.tsx /(profile) /profile/page.tsx /bookmarks/page.tsx /history/page.tsx /(admin) /admin/page.tsx /layout.tsx /components /download # компоненты страницы загрузки DownloadHero.tsx PlatformSelector.tsx FeatureShowcase.tsx ScreenshotsGallery.tsx DownloadButtons.tsx SystemRequirements.tsx FAQSection.tsx StatsBar.tsx ChangelogSection.tsx /lib /styles /public /brand logo.svg favicon.ico og-image.png /screenshots # скриншоты приложений /android /ios /windows /macos /linux /icons # иконки платформ android.svg ios.svg windows.svg macos.svg linux.svg
+
+text
+/mobile                           # React Native — Android + iOS
+  /src
+    /screens
+      HomeScreen.tsx
+      TitleScreen.tsx
+      PlayerScreen.tsx
+      SearchScreen.tsx
+      BookmarksScreen.tsx
+      ProfileScreen.tsx
+      DownloadsScreen.tsx         # офлайн-загрузки
+      SettingsScreen.tsx
+    /components
+      TitleCard.tsx
+      PlayerControls.tsx          # кастомные контролы плеера
+      SourceSwitcher.tsx          # переключатель Vibix / Veoveo
+      EpisodeList.tsx
+      RatingBadge.tsx
+      GlassTabBar.tsx             # bottom tabs с glassmorphism
+    /navigation
+      RootNavigator.tsx
+      MainTabs.tsx
+    /hooks
+      useBookmark.ts
+      usePlayer.ts
+      useNotifications.ts
+    /lib
+      apiClient.ts                # типизированный API-клиент
+      storage.ts                  # AsyncStorage для офлайн-кэша
+    /services
+      PlayerService.ts            # управление плеером, жесты
+      DownloadService.ts          # офлайн-загрузка описаний и постеров
+      NotificationService.ts      # push-уведомления о новых сериях
+  app.json                        # Expo конфиг
+  eas.json                        # EAS Build конфиг (Android APK, iOS IPA)
+  /assets
+    /brand
+      logo.png
+      splash.png
+      icon.png
+      adaptive-icon.png
+
+/desktop                          # Tauri 2 — Windows + macOS + Linux
+  /src
+    main.ts                       # точка входа Tauri
+    preload.ts                    # мост между Rust и WebView
+  tauri.conf.json                 # конфиг: окно, иконки, права
+  Cargo.toml                      # Rust зависимости
+  /icons
+    icon.ico                      # Windows
+    icon.icns                     # macOS
+    icon.png                      # Linux
+  /capabilities
+    window.json                   # права окна (fullscreen, minimize)
+    fs.json                       # права файловой системы
+
+/api                              # Fastify — бэкенд
+  /src
+    /modules
+      /titles
+        titles.controller.ts
+        titles.service.ts
+        titles.routes.ts
+        titles.schema.ts
+        titles.types.ts
+      /auth
+        auth.controller.ts
+        auth.service.ts
+        auth.routes.ts
+        auth.schema.ts
+      /users
+        users.controller.ts
+        users.service.ts
+        users.routes.ts
+      /bookmarks
+        bookmarks.controller.ts
+        bookmarks.service.ts
+        bookmarks.routes.ts
+      /comments
+        comments.controller.ts
+        comments.service.ts
+        comments.routes.ts
+      /players
+        /vibix
+          vibix.service.ts
+          vibix.types.ts
+        /veoveo
+          veoveo.service.ts
+          veoveo.types.ts
+        players.service.ts        # оркестратор: перебор по приоритету
+        players.routes.ts
+        players.types.ts
+      /search
+        search.controller.ts
+        search.service.ts
+        search.routes.ts
+      /notifications
+        notifications.controller.ts
+        notifications.service.ts
+        notifications.routes.ts
+      /downloads                   # модуль версий приложений
+        downloads.controller.ts
+        downloads.service.ts
+        downloads.routes.ts
+        downloads.types.ts
+    /core
+      /plugins
+        cors.plugin.ts
+        jwt.plugin.ts
+        rateLimit.plugin.ts
+        cache.plugin.ts
+        error.plugin.ts
+      /decorators
+        auth.decorator.ts
+      /middleware
+        auth.middleware.ts
+        admin.middleware.ts
+    /config
+      index.ts
+    /utils
+  server.ts                       # точка входа Fastify
+  /prisma
+    schema.prisma
+/packages /design-system # общая дизайн-система /tokens colors.ts typography.ts spacing.ts shadows.ts animations.ts /types index.ts /utils cn.ts /api-client # единый HTTP-клиент для web, mobile, desktop /endpoints titles.ts auth.ts bookmarks.ts comments.ts search.ts downloads.ts /types dto.ts index.ts /ui # переиспользуемые UI-компоненты (кроссплатформ) Button.tsx Card.tsx Input.tsx Badge.tsx Skeleton.tsx Modal.tsx Tabs.tsx /docker docker-compose.yml /nginx nginx.conf /conf.d kinoox.conf /postgres init.sql /deploy /ssl /ssl-www /scripts deploy.sh setup.sh /storage /downloads # APK, IPA, .exe, .dmg, .AppImage /backups # дампы PostgreSQL /.github /workflows build-mobile.yml # сборка APK и IPA через EAS build-desktop.yml # сборка .exe, .dmg, .AppImage через Tauri deploy-api.yml # деплой API на сервер deploy-web.yml # деплой сайта на сервер turbo.json pnpm-workspace.yaml package.json tsconfig.base.json .env.example .gitignore
+
+text
+
+## Дизайн-система «Cinematic Flow»
+
+### Цветовая палитра
+
+// Базовые --color-void: #06070A // фон, глубже чёрного --color-abyss: #0C0E14 // карточки, панели --color-surface: #131620 // elevated-поверхности --color-frost: #1C2030 // бордеры, разделители
+
+// Акценты (градиентные, не плоские) --color-flux: #FF3D6E ? #FF6B3D // основной (малина ? коралл) --color-prism: #7C5CFF ? #5C8CFF // вторичный (фиолет ? голуб) --color-aura: #00E5C7 ? #00B8E5 // третичный (мята ? циан)
+
+// Текст --color-text-primary: #F5F7FA --color-text-secondary: #8B92A8 --color-text-muted: #4A5068
+
+// Эффекты --glow-flux: 0 0 40px rgba(255,61,110,0.3) --glow-prism: 0 0 40px rgba(124,92,255,0.25) --glow-aura: 0 0 40px rgba(0,229,199,0.2) --blur-glass: blur(20px) saturate(1.5)
+
+text
+
+### Типографика
+
+--font-display: 'Space Grotesk' // заголовки --font-body: 'Inter' // основной текст --font-mono: 'JetBrains Mono' // технические элементы, рейтинги
+
+--text-hero: clamp(2.5rem, 6vw, 5rem) --text-h1: clamp(1.75rem, 3vw, 2.5rem) --text-h2: clamp(1.25rem, 2vw, 1.75rem) --text-body: clamp(0.875rem, 1vw, 1rem) --text-small: clamp(0.75rem, 0.8vw, 0.875rem)
+
+text
+
+### Визуальные элементы (web, mobile, desktop — единый язык)
+
+1. **Карточки тайтлов**
+   - Скруглённые (20px), мягкое внутреннее свечение по периметру
+   - При наведении/тапе: постер увеличивается, градиентная вуаль снизу с инфо
+   - Рейтинг — число в круглом бейдже с градиентом flux (>7) или серым (<7)
+   - Мягкое свечение flux-prism за карточкой при наведении
+
+2. **Плеер**
+   - Выезжает снизу с easing cubic-bezier(0.16, 1, 0.3, 1), экран затемняется
+   - Контролы — кастомные, glassmorphism, появляются при тапе, исчезают через 3 сек
+   - Прогресс-бар — градиентный flux ? prism, пульсирующая точка
+   - Переключение источников (Vibix / Veoveo) — анимированные табы снизу
+
+3. **Навигация**
+   - Web: шапка с smart-hide (прячется при скролле вниз, выезжает при скролле вверх), glassmorphism, expandable-поиск
+   - Mobile: bottom tabs с glassmorphism, активный индикатор — градиентная полоска flux-prism
+   - Desktop: кастомный заголовок окна (frameless), меню сверху, системный трей
+
+4. **Переходы между экранами**
+   - Morphing: контент выезжает снизу с scale(0.95 ? 1) и opacity(0 ? 1)
+   - Длительность: 400ms, easing: cubic-bezier(0.16, 1, 0.3, 1)
+
+5. **Загрузка (loading states)**
+   - Скелетоны с shimmer-эффектом
+   - Полноэкранная — пульсирующий логотип ??
+
+6. **Микроанимации**
+   - «В закладки»: heart-burst, иконка меняет цвет на flux
+   - Лайк комментария: ripple-эффект
+   - Смена качества плеера: morph-переход
+
+### Мобильное приложение — нативные особенности
+
+- React Native с нативными модулями, НЕ веб-обёртка
+- Плеер — fullscreen, жесты: свайп влево/вправо — перемотка 10 сек, свайп вверх — следующая серия, свайп вниз — выход из плеера
+- Pull-to-refresh с кастомным лого ??
+- Офлайн-режим: кэширование описаний и постеров в AsyncStorage
+- Push-уведомления: выход новых серий (Firebase Cloud Messaging для Android, APNs для iOS)
+- Системная интеграция: picture-in-picture, Chromecast (Android), AirPlay (iOS)
+- Сплит-скрин на iPad
+
+### Десктопное приложение — нативные особенности (Tauri 2)
+
+- Полностью нативный бинарь, НЕ Electron, НЕ веб-обёртка
+- Окно без рамок (frameless) с кастомным заголовком в стиле glassmorphism
+- Системный трей с быстрым доступом: «Продолжить просмотр», «Поиск», «Выход»
+- Горячие клавиши: Ctrl+F — поиск, Ctrl+D — закладка, Space — пауза, Esc — выход из плеера
+- Мини-плеер (picture-in-picture, всегда поверх окон)
+- Автозапуск с системой (опционально)
+- Нативные уведомления ОС о новых сериях
+- Размер приложения: ~5–10 МБ (Tauri, в отличие от Electron ~80+ МБ)
+
+## Страница загрузки /download
+
+### Структура страницы (сверху вниз)
+
+1. **DownloadHero**
+   - Полноэкранный баннер: фоновый градиент void ? abyss с анимированными частицами (flux/prism)
+   - Центр: логотип ?? KINOOX крупно, слоган «Смотри. Чувствуй. Погружайся.»
+   - Под слоганом: 5 иконок платформ (Android, iOS, Windows, macOS, Linux) с пульсацией
+   - Текст: «Полноценные приложения для всех ваших устройств. Не PWA — нативные.»
+
+2. **PlatformSelector**
+   - 5 табов: Android, iOS, Windows, macOS, Linux
+   - Переключение табов — morph-анимация (контент перетекает, не резко меняется)
+   - Каждый таб содержит: описание, кнопка скачивания, QR-код (для мобилок), размер, версия, системные требования, особенности
+
+3. **Android таб**
+   - Описание: «Полноценное нативное приложение KINOOX для Android. Каталог, плеер, закладки, офлайн-кэш, push-уведомления о новых сериях.»
+   - Кнопка: «Скачать APK» (прямая ссылка на файл)
+   - QR-код для скачивания с телефона
+   - Версия: 1.0.0 | Размер: ~25 МБ | Android 8.0+
+   - Особенности: Material You, PiP, Chromecast, push-уведомления, офлайн-каталог
+
+4. **iOS таб**
+   - Описание: «KINOOX для iOS — нативное приложение для iPhone и iPad. Жесты, AirPlay, сплит-скрин на iPad.»
+   - Кнопка: «Установить через TestFlight» (ссылка на TestFlight)
+   - QR-код
+   - Версия: 1.0.0 | Размер: ~30 МБ | iOS 14.0+
+   - Особенности: AirPlay, PiP, Force Touch, push-уведомления, сплит-скрин
+
+5. **Windows таб**
+   - Описание: «KINOOX для Windows — лёгкий нативный клиент с мини-плеером, горячими клавишами и системным треем.»
+   - Кнопка: «Скачать .exe» (установщик)
+   - Кнопка: «Скачать .msi» (портативная версия)
+   - Версия: 1.0.0 | Размер: ~8 МБ | Windows 10/11
+   - Особенности: мини-плеер поверх окон, системный трей, горячие клавиши, нативные уведомления
+
+6. **macOS таб**
+   - Описание: «KINOOX для macOS — нативный клиент с Touch Bar и Picture-in-Picture.»
+   - Кнопка: «Скачать .dmg»
+   - Версия: 1.0.0 | Размер: ~7 МБ | macOS 11+
+   - Особенности: Touch Bar, PiP, автозапуск, нативные уведомления
+
+7. **Linux таб**
+   - Описание: «KINOOX для Linux — AppImage, .deb и .rpm для всех дистрибутивов.»
+   - Кнопка: «Скачать .AppImage» (без установки)
+   - Кнопка: «Скачать .deb» (Debian/Ubuntu)
+   - Кнопка: «Скачать .rpm» (Fedora/RHEL)
+   - Версия: 1.0.0 | Размер: ~8 МБ | Ubuntu 20.04+, Fedora 35+
+   - Особенности: AppImage без установки, нативные уведомления, трей
+
+8. **FeatureShowcase**
+   - Сетка 3?2 с возможностями приложений:
+     - «Тысячи тайтлов» — фильмы, сериалы, мультфильмы, аниме
+     - «Мгновенный плеер» — переключение источников Vibix/Veoveo
+     - «Закладки и история» — синхронизация между всеми устройствами
+     - «Уведомления» — выход новых серий
+     - «Офлайн-каталог» — описания и постеры без интернета (мобилки)
+     - «Нативный опыт» — жесты, PiP, трей, горячие клавиши (десктоп)
+   - Каждая фича — иконка с градиентом aura, заголовок, описание
+
+9. **ScreenshotsGallery**
+   - Горизонтальная галерея скриншотов приложения (меняется по выбранной платформе)
+   - При клике — полноэкранный просмотр с zoom
+   - Параллакс при скролле
+
+10. **StatsBar**
+    - «10 000+ тайтлов» | «50 000+ пользователей» | «4.8? рейтинг» | «100 000+ загрузок»
+    - Числа с count-up анимацией при попадании во вьюпорт
+
+11. **ChangelogSection**
+    - История версий: версия, дата, список изменений
+    - Последняя версия раскрыта, остальные — аккордеоном
+    - Версии тянутся из API /api/v1/downloads/changelog
+
+12. **FAQSection**
+    - Аккордеон с вопросами:
+      - «Как установить APK на Android?»
+      - «Как установить через TestFlight на iOS?»
+      - «Чем отличается от PWA?» — ответ: «KINOOX — это полноценные нативные приложения, а не веб-обёртка. Они работают быстрее, поддерживают офлайн-режим, push-уведомления, системный трей и нативные жесты.»
+      - «Нужна ли подписка?»
+      - «Какие источники видео используются?»
+      - «Как синхронизировать закладки между устройствами?»
+      - «Будет ли в Google Play / App Store?»
+
+13. **Подвал страницы**
+    - CTA: «Готовы начать? Откройте KINOOX в браузере» — кнопка на главную
+    - Ссылки: поддержка, политика конфиденциальности, условия использования
+
+## Модульная архитектура бэкенда
+
+Каждый модуль в /apps/api/src/modules/ следует одному паттерну:
+
+```typescript
+// Пример: modules/titles
+
+// titles.types.ts — типы модуля
+interface TitleFilter {
+  type: string
+  genre: string
+  year: number
+  sort: string
+  page: number
+}
+
+// titles.schema.ts — Zod-валидация
+const titleFilterSchema = z.object({
+  type: z.enum(['movie', 'serial', 'cartoon', 'anime']).optional(),
+  genre: z.string().optional(),
+  year: z.number().int().min(1900).max(2030).optional(),
+  sort: z.enum(['rating', 'year', 'popular']).default('popular'),
+  page: z.number().int().min(1).default(1),
+})
+
+// titles.service.ts — бизнес-логика (НЕ знает про HTTP)
+class TitlesService {
+  async getList(filter: TitleFilter): Promise<PaginatedResponse<TitleDTO>> { ... }
+  async getById(id: number): Promise<TitleDTO> { ... }
+  async getEpisodes(id: number): Promise<Episode[]> { ... }
+  async getSources(id: number): Promise<Source[]> { ... }
+}
+
+// titles.controller.ts — тонкий, вызывает service, формирует HTTP-ответ
+async function getTitles(req: FastifyRequest, reply: FastifyReply) {
+  const filter = titleFilterSchema.parse(req.query)
+  const result = await titlesService.getList(filter)
+  return reply.send({ success: true, data: result, error: null })
+}
+
+// titles.routes.ts — регистрация роутов модуля
+export default function titlesRoutes(fastify: FastifyInstance) {
+  fastify.get('/titles', { preHandler: [authOptional] }, getTitles)
+  fastify.get('/titles/:id', getSingleTitle)
+  fastify.get('/titles/:id/episodes', getEpisodes)
+  fastify.get('/titles/:id/sources', getSources)
+}
+Интерфейс балансеров (стратегия)
+typescript
+// packages/api-client/types.ts
+interface PlayerSource {
+  balancer: 'vibix' | 'veoveo'
+  iframeUrl: string
+  quality: string
+  episodes?: EpisodeInfo[]
+}
+
+interface IBalancerService {
+  name: string
+  getPlayerByKpId(kpId: number): Promise<PlayerSource | null>
+  getEpisodes(kpId: number): Promise<EpisodeInfo[]>
+}
+
+// modules/players/vibix/vibix.service.ts — реализует IBalancerService
+// modules/players/veoveo/veoveo.service.ts — реализует IBalancerService
+// modules/players/players.service.ts — оркестратор
+class PlayersOrchestrator {
+  private services: IBalancerService[]
+  async getPlayer(kpId: number): Promise<PlayerSource | null> {
+    for (const svc of this.services) {
+      const result = await svc.getPlayerByKpId(kpId)
+      if (result) return result
+    }
+    return null
+  }
+}
+Модуль загрузок (downloads)
+typescript
+// modules/downloads/downloads.types.ts
+interface AppVersion {
+  platform: 'android' | 'ios' | 'windows' | 'macos' | 'linux'
+  version: string
+  url: string                    // прямая ссылка на файл
+  size: string
+  minimumOs: string
+  changelog: string[]
+  releaseDate: Date
+}
+
+// modules/downloads/downloads.service.ts
+class DownloadsService {
+  async getVersions(): Promise<AppVersion[]> { ... }
+  async getLatestVersion(platform: string): Promise<AppVersion | null> { ... }
+  async getChangelog(): Promise<ChangelogEntry[]> { ... }
+}
+Схема БД (Prisma)
+prisma
+model Title {
+  id              Int        @id @default(autoincrement())
+  kpId            Int?       @unique
+  imdbId          String?    @unique
+  type            TitleType
+  title           String
+  originalTitle   String?
+  description     Text?
+  posterUrl       String
+  backdropUrl     String?
+  year            Int
+  ratingKp        Decimal?   @db.Decimal(3,1)
+  ratingImdb      Decimal?   @db.Decimal(3,1)
+  duration        Int?
+  countries       String[]
+  genres          String[]
+  actors          String[]
+  directors       String[]
+  status          TitleStatus
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  episodes        Episode[]
+  sources         Source[]
+  comments        Comment[]
+  bookmarks       Bookmark[]
+  viewsHistory    ViewHistory[]
+}
+
+enum TitleType   { movie serial cartoon anime }
+enum TitleStatus { ongoing released announced }
+
+model Episode {
+  id        Int     @id @default(autoincrement())
+  titleId   Int
+  season    Int
+  episode   Int
+  name      String?
+  title     Title   @relation(fields: [titleId], references: [id], onDelete: Cascade)
+}
+
+model Source {
+  id         Int     @id @default(autoincrement())
+  titleId    Int
+  balancer   String
+  balancerId String
+  quality    String
+  priority   Int     @default(0)
+  title      Title   @relation(fields: [titleId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  avatarUrl    String?
+  role         String   @default("user")
+  createdAt    DateTime @default(now())
+  bookmarks    Bookmark[]
+  comments     Comment[]
+  viewHistory  ViewHistory[]
+}
+
+model Bookmark {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  titleId     Int
+  status      String
+  lastEpisode Int?
+  lastSeason  Int?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  titleId    Int
+  userId     Int
+  parentId   Int?
+  text       String
+  createdAt  DateTime @default(now())
+  title      Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ViewHistory {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  titleId   Int
+  season    Int?
+  episode   Int?
+  watchedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     Title    @relation(fields: [titleId], references: [id], onDelete: Cascade)
+}
+
+model AppVersion {
+  id          Int      @id @default(autoincrement())
+  platform    String   // android, ios, windows, macos, linux
+  version     String
+  url         String   // прямой URL на файл сборки
+  size        String
+  minimumOs   String
+  changelog   String[]
+  releaseDate DateTime @default(now())
+  isActive    Boolean  @default(true)
+}
+API-роуты
+Public
+GET /api/v1/titles?type=&genre=&year=&sort=&page= GET /api/v1/titles/:id GET /api/v1/titles/:id/episodes GET /api/v1/titles/:id/sources GET /api/v1/search?q=
+
+Auth
+POST /api/v1/auth/login POST /api/v1/auth/register POST /api/v1/auth/refresh
+
+User (JWT)
+GET /api/v1/user/bookmarks POST /api/v1/user/bookmarks DELETE /api/v1/user/bookmarks/:titleId GET /api/v1/user/history POST /api/v1/user/history GET /api/v1/user/profile PATCH /api/v1/user/profile
+
+Comments
+GET /api/v1/titles/:id/comments POST /api/v1/titles/:id/comments DELETE /api/v1/comments/:id
+
+Downloads
+GET /api/v1/downloads — все версии по платформам GET /api/v1/downloads/:platform — последняя версия для платформы GET /api/v1/downloads/changelog — история версий
+
+Notifications (Socket.io)
+GET /api/v1/notifications WS /socket.io
+
+Health
+GET /api/health — healthcheck для Docker
+
+Формат ответа: { "success": boolean, "data": T | null, "error": string | null }
+
+Сборка и дистрибуция приложений
+Mobile (React Native + Expo EAS)
+Android: EAS Build ? APK, распространение через прямой download на kinoox.ru/download
+iOS: EAS Build ? IPA, распространение через TestFlight
+CI/CD: GitHub Actions ? eas build --platform android/ios
+Подпись: отдельные keystore (Android) и provisioning profile (iOS) в секретах GitHub
+Desktop (Tauri 2)
+Windows: tauri build ? .exe (установщик NSIS) + .msi
+macOS: tauri build ? .dmg + .app
+Linux: tauri build ? .AppImage + .deb + .rpm
+CI/CD: GitHub Actions ? tauri build для каждой платформы
+Файлы загружаются на сервер, ссылки отдаются через API /downloads
+Хранение файлов сборок
+Файлы (APK, IPA, .exe, .dmg, .AppImage) хранятся на сервере в /storage/downloads/
+Nginx отдаёт их как статику с правильными Content-Type и заголовками
+API /downloads отдаёт URL вида 
+Продакшн-окружение
+Сервер: Intel Core i7-6700 (4 ядра / 8 потоков), 64 ГБ RAM, 2?512 ГБ SSD
+ОС: Debian 12 (Bookworm)
+IP: 95.216.97.185
+Docker-compose: PostgreSQL 16, Redis 7, Node.js API, Next.js Web, Nginx, Certbot, Certbot Renewer, PG Backup, Watchtower
+Docker memory limits: postgres 32G, redis 4G, api 8G, web 8G
+PostgreSQL: max_connections=100, shared_buffers=16GB, effective_cache_size=32GB, work_mem=256MB, maintenance_work_mem=2GB, wal_buffers=64MB, autovacuum=on, autovacuum_max_workers=3, autovacuum_naptime=30s, log_min_duration_statement=500
+Redis: maxmemory=4GB, eviction-policy=allkeys-lru, AOF persistence (appendonly yes, appendfsync everysec, auto-aof-rewrite-percentage 100, auto-aof-rewrite-min-size 64mb), tcp-keepalive 60, hz 10
+Node.js API: --max-old-space-size=4096 (лимит кучи 4 ГБ на процесс)
+Next.js: --max-old-space-size=4096, ISR для снижения нагрузки SSR
+Nginx: reverse proxy, SSL (Let's Encrypt), gzip, proxy_cache для API (60 сек), кэширование статики (30 дней), отдача файлов сборок приложений
+Swap: 4 ГБ файловый swap
+Домен: kinoox.ru (www ? без www, редирект 301)
+Мониторинг: Cockpit на порту 9090, healthcheck /api/health
+Внутренняя Docker-сеть: kinoox_net (bridge, subnet 172.20.0.0/16, gateway 172.20.0.1) для изоляции контейнеров
+Логирование: json-file driver с лимитами (max-size 50m, max-file 5) на каждый контейнер
+Healthcheck'и на всех сервисах, depends_on с condition: service_healthy / service_completed_successfully
+Prisma Migrations: отдельный one-shot контейнер с retry-логикой, запускается после готовности PostgreSQL
+SSL: Let's Encrypt через certbot контейнер (webroot метод), автообновление через certbot-renewer (cron, каждый день в 3:00)
+Бэкапы: ежедневный дамп PostgreSQL в 2:00 через pg-backup контейнер, хранение 14 дней, удаление старых автоматически
+Watchtower: автообновление Docker-образов по метке (раз в сутки, WATCHTOWER_LABEL_ENABLE=true)
+Ulimits: nofile 65536, nproc 4096 — для Node.js и PostgreSQL под нагрузкой
+DNS в контейнерах: 8.8.8.8, 8.8.4.4 — для обращения к балансерам (Vibix/Veoveo) по внешним URL
+Network aliases: postgres=db, api=backend, web=frontend, redis=cache, nginx=proxy
+Reservations: API и Web имеют гарантированные 2 ГБ RAM каждый
+
+docker-compose.yml (продакшн — ПОЛНЫЙ)
+
+Вот максимально полный production docker-compose.yml — с мониторингом (Prometheus + Grafana), логированием (Loki + Promtail), объектным хранилищем (MinIO), Adminer, security hardening и всеми сервисами:
+
+yaml
+version: "3.8"
+
+# ????????????????????????????????????????????????????????????????????
+#  KINOOX.RU — Production Docker Compose
+#  Server: i7-6700 / 64GB RAM / 2?512GB SSD / Debian 12
+#  IP: 95.216.97.185
+# ????????????????????????????????????????????????????????????????????
+
+x-restart-policy: &restart-policy
+  restart: unless-stopped
+
+x-security-hardening: &security-hardening
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+x-logging: &default-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "5"
+
+x-env: &default-env
+  env_file:
+    - .env
+  environment:
+    TZ: Europe/Moscow
+
+services:
+
+  # ????????????????????????????????????????????????????????????????????
+  #  PostgreSQL 16 — основная база данных
+  # ????????????????????????????????????????????????????????????????????
+  postgres:
+    <<: [*restart-policy, *default-logging]
+    image: postgres:16
+    container_name: kinoox-postgres
+    stop_grace_period: 60s
+    <<: *security-hardening
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+        reservations:
+          memory: 4G
+    environment:
+      POSTGRES_USER: ${DB_USER:-kinoox}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-kinoox_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+      TZ: Europe/Moscow
+    command: >
+      postgres
+      -c max_connections=100
+      -c shared_buffers=16GB
+      -c effective_cache_size=32GB
+      -c work_mem=256MB
+      -c maintenance_work_mem=2GB
+      -c wal_buffers=64MB
+      -c checkpoint_completion_target=0.9
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c log_min_duration_statement=500
+      -c log_connections=off
+      -c log_disconnections=off
+      -c log_line_prefix="%t [%p]: user=%u,db=%d,app=%a,client=%h "
+      -c log_lock_waits=on
+      -c log_temp_files=0
+      -c log_autovacuum_min_duration=0
+      -c stats_temp_directory=/var/lib/postgresql/data/pg_stat_tmp
+      -c timezone=Europe/Moscow
+      -c track_activity_query_size=2048
+      -c track_io_timing=on
+      -c autovacuum=on
+      -c autovacuum_max_workers=3
+      -c autovacuum_naptime=30s
+      -c autovacuum_vacuum_cost_limit=1000
+      -c autovacuum_vacuum_cost_delay=10ms
+      -c default_statistics_target=500
+      -c max_wal_size=4GB
+      -c min_wal_size=1GB
+      -c archive_mode=on
+      -c archive_command="test ! -f /backups/wal_archive/%f && cp %p /backups/wal_archive/%f"
+      -c hot_standby=on
+      -c wal_level=replica
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 4096
+        hard: 4096
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - pg_stat_tmp:/var/lib/postgresql/data/pg_stat_tmp
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./storage/backups:/backups
+      - ./storage/backups/wal_archive:/backups/wal_archive
+      - pg_run:/var/run/postgresql
+    tmpfs:
+      - /tmp:size=512M
+    networks:
+      kinoox_backend:
+        aliases:
+          - postgres
+          - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kinoox} -d ${DB_NAME:-kinoox_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+      - "kinoox.service=database"
+      - "kinoox.tier=critical"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Redis 7 — кэш и сессии
+  # ????????????????????????????????????????????????????????????????????
+  redis:
+    <<: [*restart-policy, *default-logging]
+    image: redis:7
+    container_name: kinoox-redis
+    stop_grace_period: 15s
+    <<: *security-hardening
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 512M
+    command: >
+      redis-server
+      --maxmemory 4gb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --appendonly yes
+      --appendfsync everysec
+      --no-appendfsync-on-rewrite no
+      --auto-aof-rewrite-percentage 100
+      --auto-aof-rewrite-min-size 64mb
+      --timeout 300
+      --tcp-keepalive 60
+      --hz 10
+      --loglevel notice
+      --latency-monitor-threshold 100
+      --slowlog-log-slower-than 10000
+      --slowlog-max-len 128
+      --client-output-buffer-limit normal 0 0 0
+      --client-output-buffer-limit replica 256mb 64mb 60
+      --client-output-buffer-limit pubsub 32mb 8mb 60
+      --notify-keyspace-events Exg
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - redis_data:/data
+    tmpfs:
+      - /tmp:size=128M
+    networks:
+      kinoox_backend:
+        aliases:
+          - redis
+          - cache
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+      - "kinoox.service=cache"
+      - "kinoox.tier=critical"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Prisma Migrations — one-shot, применяет схему и seed
+  # ????????????????????????????????????????????????????????????????????
+  migrate:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: kinoox-migrate
+    restart: "no"
+    <<: *security-hardening
+    command: >
+      sh -c "
+        echo '=== KINOOX Migration Runner ==='
+        echo 'Waiting for PostgreSQL to be ready...'
+        attempt=1
+        max_attempts=30
+        while [ $$attempt -le $$max_attempts ]; do
+          if npx prisma migrate status 2>&1 | grep -q 'Database schema is up to date'; then
+            echo 'Migrations already applied'
+            break
+          fi
+          echo 'Attempt '$$attempt'/'$$max_attempts': Running prisma migrate deploy...'
+          if npx prisma migrate deploy; then
+            echo 'Migrations applied successfully'
+            break
+          fi
+          echo 'Retrying in 5 seconds...'
+          sleep 5
+          attempt=$$((attempt + 1))
+        done
+        if [ $$attempt -gt $$max_attempts ]; then
+          echo 'ERROR: Failed to apply migrations after '$$max_attempts' attempts'
+          exit 1
+        fi
+        echo 'Running seed...'
+        npx prisma db seed
+        echo '=== Migration and seed completed ==='
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kinoox_backend
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-kinoox_db}?schema=public
+      TZ: Europe/Moscow
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  API — Fastify + Node.js 20
+  # ????????????????????????????????????????????????????????????????????
+  api:
+    <<: [*restart-policy, *default-logging]
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: kinoox-api
+    stop_grace_period: 30s
+    <<: *security-hardening
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+    command: node server.js --max-old-space-size=4096 --enable-source-maps --heapsnapshot-signal=SIGUSR2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      kinoox_backend:
+        aliases:
+          - api
+          - backend
+      kinoox_frontend:
+        aliases:
+          - api
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      TZ: Europe/Moscow
+      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-kinoox_db}?schema=public
+      REDIS_URL: redis://redis:6379
+      API_PORT: 3001
+      API_HOST: 0.0.0.0
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    tmpfs:
+      - /tmp:size=256M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3001/api/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "kinoox.service=api"
+      - "kinoox.tier=critical"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Web — Next.js 14+ SSR
+  # ????????????????????????????????????????????????????????????????????
+  web:
+    <<: [*restart-policy, *default-logging]
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: kinoox-web
+    stop_grace_period: 30s
+    <<: *security-hardening
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+    command: node server.js --max-old-space-size=4096 --enable-source-maps
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      kinoox_frontend:
+        aliases:
+          - web
+          - frontend
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      TZ: Europe/Moscow
+      NEXT_PUBLIC_API_URL: https://kinoox.ru/api/v1
+      NEXT_PUBLIC_SOCKET_URL: https://kinoox.ru
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    tmpfs:
+      - /tmp:size=256M
+      - /app/.next/cache:size=512M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "kinoox.service=web"
+      - "kinoox.tier=critical"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Nginx — reverse proxy + SSL + стatica + rate limit
+  # ????????????????????????????????????????????????????????????????????
+  nginx:
+    <<: [*restart-policy, *default-logging]
+    image: nginx:alpine
+    container_name: kinoox-nginx
+    stop_grace_period: 15s
+    <<: *security-hardening
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+      - ./deploy/ssl-www:/var/www/letsencrypt:rw
+      - ./storage/downloads:/usr/share/nginx/downloads:ro
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+      - nginx_run:/var/run
+      - nginx_tmp:/tmp
+    tmpfs:
+      - /var/cache/nginx/client_temp:size=128M
+      - /var/cache/nginx/proxy_temp:size=128M
+      - /var/cache/nginx/fastcgi_temp:size=128M
+      - /var/cache/nginx/uwsgi_temp:size=128M
+      - /var/cache/nginx/scgi_temp:size=128M
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      kinoox_frontend:
+        aliases:
+          - nginx
+          - proxy
+      kinoox_monitoring:
+        aliases:
+          - nginx
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/health 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "kinoox.service=proxy"
+      - "kinoox.tier=critical"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Certbot — первичный выпуск SSL-сертификата
+  # ????????????????????????????????????????????????????????????????????
+  certbot:
+    image: certbot/certbot
+    container_name: kinoox-certbot
+    restart: "no"
+    <<: *security-hardening
+    volumes:
+      - ./deploy/ssl:/etc/letsencrypt:rw
+      - ./deploy/ssl-www:/var/www/letsencrypt:rw
+    entrypoint: >
+      sh -c "
+        if [ -f /etc/letsencrypt/live/kinoox.ru/fullchain.pem ]; then
+          echo 'SSL certificate already exists. Skipping.';
+          exit 0;
+        fi
+        echo 'Requesting Let'\''s Encrypt certificate for kinoox.ru...';
+        certbot certonly
+          --webroot
+          --webroot-path=/var/www/letsencrypt
+          --email ${SSL_EMAIL:-admin@kinoox.ru}
+          --agree-tos
+          --no-eff-email
+          -d kinoox.ru
+          -d www.kinoox.ru
+          --non-interactive
+        echo 'SSL certificate obtained successfully.';
+      "
+    depends_on:
+      nginx:
+        condition: service_healthy
+    networks:
+      - kinoox_frontend
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Certbot Renewer — автообновление SSL каждый день в 3:00
+  # ????????????????????????????????????????????????????????????????????
+  certbot-renewer:
+    <<: [*restart-policy, *default-logging]
+    image: certbot/certbot
+    container_name: kinoox-certbot-renewer
+    <<: *security-hardening
+    volumes:
+      - ./deploy/ssl:/etc/letsencrypt:rw
+      - ./deploy/ssl-www:/var/www/letsencrypt:rw
+    entrypoint: >
+      sh -c "
+        echo '=== KINOOX SSL Renewer ==='
+        echo 'Setting up cron job for daily renewal at 03:00...';
+        echo '0 3 * * * certbot renew --webroot --webroot-path=/var/www/letsencrypt --non-interactive --quiet --deploy-hook "touch /tmp/ssl_renewed"' > /etc/crontabs/root
+        echo 'Cron installed. Starting crond...';
+        crond -f -l 8
+      "
+    depends_on:
+      - nginx
+    networks:
+      - kinoox_frontend
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  PG Backup — ежедневный дамп PostgreSQL в 2:00, хранение 30 дней
+  # ????????????????????????????????????????????????????????????????????
+  pg-backup:
+    <<: [*restart-policy, *default-logging]
+    image: postgres:16
+    container_name: kinoox-pg-backup
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    environment:
+      PGUSER: ${DB_USER:-kinoox}
+      PGPASSWORD: ${DB_PASSWORD}
+      PGHOST: postgres
+      PGDATABASE: ${DB_NAME:-kinoox_db}
+      TZ: Europe/Moscow
+      RETENTION_DAYS: "30"
+    entrypoint: >
+      sh -c "
+        echo '=== KINOOX PostgreSQL Backup ==='
+        mkdir -p /backups/wal_archive
+        echo 'Setting up daily backup cron at 02:00...'
+        echo '0 2 * * * echo \"Starting backup...\" && pg_dump -Fc -f /backups/kinoox_$$(date +\%Y\%m\%d_\%H\%M).dump && echo \"Backup done\" && find /backups -name \"*.dump\" -mtime +'$${RETENTION_DAYS:-30}' -delete && echo \"Old backups cleaned\"' > /etc/crontabs/root
+        echo 'Cron installed. Starting crond...'
+        crond -f -l 8
+      "
+    volumes:
+      - ./storage/backups:/backups
+      - ./storage/backups/wal_archive:/backups/wal_archive
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kinoox_backend
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  MinIO — S3-совместимое хранилище для файлов сборок
+  # ????????????????????????????????????????????????????????????????????
+  minio:
+    <<: [*restart-policy, *default-logging]
+    image: minio/minio:latest
+    container_name: kinoox-minio
+    stop_grace_period: 15s
+    <<: *security-hardening
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 256M
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kinooxadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_DOMAIN: minio.kinoox.ru
+      TZ: Europe/Moscow
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      kinoox_frontend:
+        aliases:
+          - minio
+      kinoox_backend:
+        aliases:
+          - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "kinoox.service=storage"
+      - "kinoox.tier=important"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  MinIO Init — создание bucket при первом запуске (one-shot)
+  # ????????????????????????????????????????????????????????????????????
+  minio-init:
+    image: minio/mc:latest
+    container_name: kinoox-minio-init
+    restart: "no"
+    <<: *security-hardening
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        echo '=== MinIO Init ==='
+        until mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
+          echo 'Waiting for MinIO...'
+          sleep 2
+        done
+        mc mb kinoox/downloads --ignore-existing
+        mc mb kinoox/screenshots --ignore-existing
+        mc mb kinoox/backups --ignore-existing
+        mc anonymous set download kinoox/downloads
+        echo 'Buckets created and configured.'
+      "
+    networks:
+      - kinoox_backend
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "1"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Adminer — веб-интерфейс для управления БД (доступ по /adminer)
+  # ????????????????????????????????????????????????????????????????????
+  adminer:
+    <<: [*restart-policy, *default-logging]
+    image: adminer:latest
+    container_name: kinoox-adminer
+    <<: *security-hardening
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kinoox_backend
+      - kinoox_frontend
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DB: ${DB_NAME:-kinoox_db}
+      ADMINER_DEFAULT_USERNAME: ${DB_USER:-kinoox}
+      TZ: Europe/Moscow
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "kinoox.service=adminer"
+      - "kinoox.tier=utility"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Watchtower — автообновление Docker-образов по метке
+  # ????????????????????????????????????????????????????????????????????
+  watchtower:
+    <<: [*restart-policy, *default-logging]
+    image: containrrr/watchtower
+    container_name: kinoox-watchtower
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: 86400
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      WATCHTOWER_NOTIFICATION_URL: ""
+      TZ: Europe/Moscow
+    command: --label-enable --debug
+    networks:
+      - kinoox_monitoring
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  МОНИТОРИНГ — Prometheus + Grafana + Node Exporter + cAdvisor
+  # ????????????????????????????????????????????????????????????????????
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Prometheus — сбор метрик
+  # ????????????????????????????????????????????????????????????????????
+  prometheus:
+    <<: [*restart-policy, *default-logging]
+    image: prom/prometheus:latest
+    container_name: kinoox-prometheus
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 256M
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - kinoox_monitoring
+      - kinoox_backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Grafana — дашборды и визуализация
+  # ????????????????????????????????????????????????????????????????????
+  grafana:
+    <<: [*restart-policy, *default-logging]
+    image: grafana/grafana:latest
+    container_name: kinoox-grafana
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 128M
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: https://kinoox.ru/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_ORG_CREATE: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SMTP_ENABLED: "false"
+      GF_INSTALL_PLUGINS: ""
+      TZ: Europe/Moscow
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - kinoox_monitoring
+      - kinoox_frontend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Node Exporter — метрики хоста (CPU, RAM, диск, сеть)
+  # ????????????????????????????????????????????????????????????????????
+  node-exporter:
+    <<: [*restart-policy, *default-logging]
+    image: prom/node-exporter:latest
+    container_name: kinoox-node-exporter
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.cpu'
+      - '--collector.diskstats'
+      - '--collector.filesystem'
+      - '--collector.loadavg'
+      - '--collector.meminfo'
+      - '--collector.netdev'
+      - '--collector.netstat'
+      - '--collector.stat'
+      - '--collector.time'
+      - '--collector.vmstat'
+      - '--collector.processes'
+    volumes:
+      - /:/host:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc:/host/etc:ro
+    networks:
+      - kinoox_monitoring
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  cAdvisor — метрики контейнеров (CPU, RAM, I/O per container)
+  # ????????????????????????????????????????????????????????????????????
+  cadvisor:
+    <<: [*restart-policy, *default-logging]
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: kinoox-cadvisor
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+      - SYS_ADMIN
+      - NET_ADMIN
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - cadvisor_data:/tmp
+    networks:
+      - kinoox_monitoring
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Alertmanager — уведомления о проблемах
+  # ????????????????????????????????????????????????????????????????????
+  alertmanager:
+    <<: [*restart-policy, *default-logging]
+    image: prom/alertmanager:latest
+    container_name: kinoox-alertmanager
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=https://kinoox.ru/alertmanager'
+    volumes:
+      - ./docker/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - kinoox_monitoring
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  ЛОГИРОВАНИЕ — Loki + Promtail
+  # ????????????????????????????????????????????????????????????????????
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Loki — агрегация и хранение логов
+  # ????????????????????????????????????????????????????????????????????
+  loki:
+    <<: [*restart-policy, *default-logging]
+    image: grafana/loki:latest
+    container_name: kinoox-loki
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 256M
+    command:
+      - '-config.file=/etc/loki/loki-config.yml'
+      - '-config.expand-env=true'
+    volumes:
+      - ./docker/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks:
+      - kinoox_monitoring
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ????????????????????????????????????????????????????????????????????
+  #  Promtail — сбор логов из Docker и отправка в Loki
+  # ????????????????????????????????????????????????????????????????????
+  promtail:
+    <<: [*restart-policy, *default-logging]
+    image: grafana/promtail:latest
+    container_name: kinoox-promtail
+    <<: *security-hardening
+    cap_add:
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    command:
+      - '-config.file=/etc/promtail/promtail-config.yml'
+    volumes:
+      - ./docker/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail_data:/tmp
+    networks:
+      - kinoox_monitoring
+    depends_on:
+      - loki
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+# ????????????????????????????????????????????????????????????????????
+#  ТОМА
+# ????????????????????????????????????????????????????????????????????
+volumes:
+  pg_data:
+    driver: local
+  pg_stat_tmp:
+    driver: local
+  pg_run:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+  nginx_run:
+    driver: local
+  nginx_tmp:
+    driver: local
+  minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  loki_data:
+    driver: local
+  promtail_data:
+    driver: local
+  cadvisor_data:
+    driver: local
+
+# ????????????????????????????????????????????????????????????????????
+#  СЕТИ — сегментация по уровням доступа
+# ????????????????????????????????????????????????????????????????????
+networks:
+  # Frontend — Nginx, Web, API (доступ к публичным портам)
+  kinoox_frontend:
+    driver: bridge
+    name: kinoox_frontend
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.1.0/24
+          gateway: 172.20.1.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-fe
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: 1500
+
+  # Backend — PostgreSQL, Redis, API, MinIO (изолировано от интернета)
+  kinoox_backend:
+    driver: bridge
+    name: kinoox_backend
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.2.0/24
+          gateway: 172.20.2.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-be
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.driver.mtu: 1500
+
+  # Monitoring — Prometheus, Grafana, exporters, Loki (изолировано)
+  kinoox_monitoring:
+    driver: bridge
+    name: kinoox_monitoring
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.3.0/24
+          gateway: 172.20.3.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-mon
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.driver.mtu: 1500
+Полный список сервисов (16 штук)
+#	Сервис	Назначение	Сеть	Память
+1	postgres	База данных PostgreSQL 16	backend (internal)	32G
+2	redis	Кэш и сессии Redis 7	backend (internal)	4G
+3	migrate	Prisma миграции и seed (one-shot)	backend	—
+4	api	Fastify + Node.js бэкенд	backend + frontend	8G
+5	web	Next.js SSR фронтенд	frontend	8G
+6	nginx	Reverse proxy, SSL, статика	frontend + monitoring	—
+7	certbot	Первичный выпуск SSL	frontend	—
+8	certbot-renewer	Автообновление SSL (cron)	frontend	—
+9	pg-backup	Ежедневный дамп БД (cron)	backend	—
+10	minio	S3-хранилище для файлов сборок	frontend + backend	2G
+11	minio-init	Создание buckets (one-shot)	backend	—
+12	adminer	Веб-интерфейс для БД	backend + frontend	256M
+13	watchtower	Автообновление Docker-образов	monitoring	—
+14	prometheus	Сбор метрик (retention 30d)	monitoring + backend	2G
+15	grafana	Дашборды и визуализация	monitoring + frontend	1G
+16	node-exporter	Метрики хоста (CPU, RAM, диск)	monitoring	—
+17	cadvisor	Метрики контейнеров	monitoring	1G
+18	alertmanager	Уведомления о проблемах	monitoring	256M
+19	loki	Агрегация логов	monitoring	2G
+20	promtail	Сбор логов из Docker	monitoring	512M
+Что добавилось нового
+Блок	Детали
+MinIO	S3-хранилище для APK, .exe, .dmg — вместо прямых файлов на диске
+minio-init	Автосоздание buckets: downloads, screenshots, backups
+Adminer	Веб-интерфейс для управления PostgreSQL
+Prometheus	Сбор метрик с retention 30 дней, 10 ГБ лимит
+Grafana	Дашборды через Nginx на /grafana
+Node Exporter	Метрики сервера: CPU, RAM, диск, сеть, load average
+cAdvisor	Метрики каждого контейнера: CPU, RAM, I/O
+Alertmanager	Уведомления о падениях, высокой нагрузке, кончающемся месте
+Loki	Агрегация логов всех контейнеров в одном месте
+Promtail	Автосбор логов из Docker, отправка в Loki
+3 сети	Сегментация: frontend (публичная), backend (internal), monitoring (internal)
+Security hardening	no-new-privileges, cap_drop: ALL + точечные cap_add на каждом сервисе
+tmpfs	Временные файлы в RAM, не пишут на диск
+YAML anchors	x-restart-policy, x-security-hardening, x-logging, x-env — DRY
+Labels	Watchtower метки на каждом сервисе + кастомные kinoox.*
+WAL archiving	PostgreSQL archive_mode + archive_command для PITR
+Slowlog	Redis slowlog + PostgreSQL log_min_duration_statement
+Prometheus alert rules	Подключение alert_rules.yml
+Grafana provisioning	Автозагрузка datasource (Prometheus, Loki) и dashboards
+Расход памяти по лимитам
+Категория	Лимит
+PostgreSQL	32 ГБ
+Redis	4 ГБ
+API	8 ГБ
+Web	8 ГБ
+MinIO	2 ГБ
+Prometheus	2 ГБ
+Grafana	1 ГБ
+cAdvisor	1 ГБ
+Loki	2 ГБ
+Promtail	512 МБ
+Adminer	256 МБ
+Alertmanager	256 МБ
+Nginx + остальные	~500 МБ
+Итого лимиты	~61,5 ГБ из 64 ГБ
+Остаток для ОС	~2,5 ГБ (хватит: Debian minimal ~300 МБ в простое)

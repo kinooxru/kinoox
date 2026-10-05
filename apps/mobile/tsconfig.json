@@ -1,0 +1,18 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-native",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@kinoox/api-client": ["../../packages/api-client/src/index.ts"],
+      "@kinoox/design-system/tokens": ["../../packages/design-system/src/tokens/index.ts"],
+      "@kinoox/design-system/utils": ["../../packages/design-system/src/utils/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  "exclude": ["node_modules", "android", "ios"]
+}

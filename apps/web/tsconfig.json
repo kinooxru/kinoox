@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@kinoox/api-client": ["../../packages/api-client/src/index.ts"],
+      "@kinoox/design-system": ["../../packages/design-system/src/ui/index.ts"],
+      "@kinoox/design-system/tokens": ["../../packages/design-system/src/tokens/index.ts"],
+      "@kinoox/design-system/utils": ["../../packages/design-system/src/utils/index.ts"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next"]
+}

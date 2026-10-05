@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Токены дизайн-системы «Cinematic Flow» */
+@import '@kinoox/design-system/tokens.css';
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-void);
+    color: var(--color-text-primary);
+  }
+}
+
+@layer components {
+  /* Контейнер контента */
+  .kx-container {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 4rem);
+  }
+
+  /* Стеклянная поверхность: blur(20px) saturate(1.5) */
+  .kx-glass {
+    background: var(--glass-background);
+    -webkit-backdrop-filter: var(--blur-glass);
+    backdrop-filter: var(--blur-glass);
+    border: var(--glass-border);
+  }
+
+  /* Градиентный текст в цвете flux */
+  .kx-gradient-text {
+    background: var(--gradient-flux);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Сетка каталога */
+  .kx-grid-titles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .kx-grid-titles {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .kx-grid-titles {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .kx-grid-titles {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  /* Горизонтальная карусель подборок */
+  .kx-scroller {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 1rem;
+    scrollbar-width: none;
+  }
+
+  .kx-scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kx-scroller > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  /* Затемняющая вуаль снизу карточки */
+  .kx-card-veil {
+    background: linear-gradient(
+      180deg,
+      rgba(6, 7, 10, 0) 0%,
+      rgba(6, 7, 10, 0.55) 45%,
+      rgba(6, 7, 10, 0.95) 100%
+    );
+  }
+
+  /* Фон hero-блока с частицами */
+  .kx-hero-bg {
+    background:
+      radial-gradient(120% 90% at 15% 10%, rgba(255, 61, 110, 0.18) 0%, transparent 55%),
+      radial-gradient(100% 80% at 85% 25%, rgba(124, 92, 255, 0.16) 0%, transparent 60%),
+      radial-gradient(90% 70% at 50% 100%, rgba(0, 229, 199, 0.08) 0%, transparent 60%),
+      linear-gradient(180deg, var(--color-void) 0%, var(--color-abyss) 100%);
+  }
+
+  /* Тонкая линия-разделитель */
+  .kx-divider {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-frost) 20%,
+      var(--color-frost) 80%,
+      transparent 100%
+    );
+  }
+}
+
+@layer utilities {
+  .kx-text-balance {
+    text-wrap: balance;
+  }
+
+  .kx-no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kx-no-scrollbar {
+    scrollbar-width: none;
+  }
+}

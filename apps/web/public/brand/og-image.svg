@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="KINOOX — Смотри. Чувствуй. Погружайся.">
+  <defs>
+    <linearGradient id="flux" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF3D6E" />
+      <stop offset="100%" stop-color="#FF6B3D" />
+    </linearGradient>
+    <linearGradient id="prism" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C5CFF" />
+      <stop offset="100%" stop-color="#5C8CFF" />
+    </linearGradient>
+    <radialGradient id="glowFlux" cx="15%" cy="10%" r="60%">
+      <stop offset="0%" stop-color="#FF3D6E" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#FF3D6E" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowPrism" cx="88%" cy="30%" r="55%">
+      <stop offset="0%" stop-color="#7C5CFF" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#7C5CFF" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#06070A" />
+  <rect width="1200" height="630" fill="url(#glowFlux)" />
+  <rect width="1200" height="630" fill="url(#glowPrism)" />
+
+  <!-- Знак KINOOX -->
+  <g transform="translate(120 180) scale(2.2)">
+    <g fill="none" stroke="url(#flux)" stroke-width="3" stroke-linecap="round">
+      <path d="M22 44c-7-2-12-8-12-15s6-14 14-16c9-2 20 1 26 7 4 4 5 9 2 13-3 4-9 5-15 4-4-1-7-3-11-3-10 0-16 2-18 6-1 2 0 4 2 5 3 2 7 2 12 3" />
+    </g>
+    <circle cx="43" cy="22" r="2.4" fill="url(#flux)" />
+    <g stroke="url(#flux)" stroke-width="2" stroke-linecap="round" opacity="0.75">
+      <path d="M18 15l-3-4" />
+      <path d="M26 12l-1-4" />
+      <path d="M34 12l2-4" />
+      <path d="M14 24l-5-2" />
+      <path d="M12 33h-5" />
+      <path d="M34 47l2 4" />
+      <path d="M26 50v4" />
+      <path d="M46 45l4 3" />
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="120" y="420" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-size="92" font-weight="700" letter-spacing="18" fill="#F5F7FA">KINOOX</text>
+
+  <!-- Слоган -->
+  <text x="122" y="480" font-family="Inter, system-ui, sans-serif" font-size="30" fill="#8B92A8">Смотри. Чувствуй. Погружайся.</text>
+
+  <!-- Подпись -->
+  <text x="122" y="540" font-family="JetBrains Mono, monospace" font-size="18" letter-spacing="3" fill="#4A5068">KINOOX.RU · НАТИВНЫЕ ПРИЛОЖЕНИЯ ДЛЯ ВСЕХ ПЛАТФОРМ</text>
+
+  <!-- Акцентная полоса -->
+  <rect x="0" y="620" width="1200" height="10" fill="url(#prism)" />
+</svg>

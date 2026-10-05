@@ -1,0 +1,166 @@
+name: Deploy API
+
+# Деплой бэкенда Fastify на продакшн-сервер 95.216.97.185.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/api-client/**'
+      - 'docker/docker-compose.yml'
+      - 'apps/api/Dockerfile'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+
+  verify:
+    name: Проверки перед деплоем
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Проверка схемы Prisma
+        working-directory: apps/api
+        run: pnpm exec prisma validate
+        env:
+          DATABASE_URL: 'postgresql://kinoox:kinoox@localhost:5432/kinoox_db?schema=public'
+
+      - name: Генерация Prisma Client
+        working-directory: apps/api
+        run: pnpm exec prisma generate
+        env:
+          DATABASE_URL: 'postgresql://kinoox:kinoox@localhost:5432/kinoox_db?schema=public'
+
+      - name: Проверка типов API
+        run: pnpm --filter @kinoox/api typecheck
+
+  build:
+    name: Сборка образа
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Кэш слоёв Docker
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-api-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-api-
+
+      - name: Сборка образа API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          load: true
+          tags: kinoox-api:${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Обновление кэша
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  deploy:
+    name: Деплой на сервер
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Обновление API на сервере
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          script: |
+            set -e
+            cd /opt/kinoox
+
+            # Резервная копия базы перед обновлением
+            mkdir -p storage/backups
+            docker compose -f docker/docker-compose.yml exec -T postgres \
+              pg_dump -U "${DB_USER:-kinoox}" -d "${DB_NAME:-kinoox_db}" -Fc \
+              > "storage/backups/pre-deploy-$(date +%Y%m%d_%H%M%S).dump" || true
+
+            # Обновление кода
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            # Пересборка и перезапуск только API
+            docker compose -f docker/docker-compose.yml build api
+            docker compose -f docker/docker-compose.yml up -d --no-deps api
+
+            # Ждём готовности
+            for i in $(seq 1 40); do
+              if curl -sf http://localhost/api/health > /dev/null; then
+                echo "API готов"
+                break
+              fi
+              sleep 3
+            done
+
+            # Чистим старые образы
+            docker image prune -f
+
+            echo "Деплой API завершён: $(git rev-parse --short HEAD)"
+
+  smoke-test:
+    name: Проверка после деплоя
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Проверка healthcheck
+        run: |
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://kinoox.ru/api/health || echo 000)
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ API отвечает 200"
+              curl -s https://kinoox.ru/api/health | head -c 500
+              exit 0
+            fi
+            echo "Попытка $i: статус $STATUS"
+            sleep 10
+          done
+          echo "✗ API не отвечает"
+          exit 1
+
+      - name: Проверка каталога
+        run: |
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' 'https://kinoox.ru/api/v1/titles?perPage=3')
+          echo "GET /api/v1/titles → $STATUS"
+          test "$STATUS" = "200"
+
+      - name: Проверка страницы загрузки
+        run: |
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' 'https://kinoox.ru/api/v1/downloads')
+          echo "GET /api/v1/downloads → $STATUS"
+          test "$STATUS" = "200"

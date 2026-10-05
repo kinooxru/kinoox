@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "KINOOX",
+    "slug": "kinoox",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/icon.png",
+    "scheme": "kinoox",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/brand/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#06070A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ru.kinoox.app",
+      "buildNumber": "1",
+      "requireFullScreen": false,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio", "remote-notification"],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        }
+      }
+    },
+    "android": {
+      "package": "ru.kinoox.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-icon.png",
+        "backgroundColor": "#06070A"
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ],
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-av",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/notification-icon.png",
+          "color": "#FF3D6E"
+        }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT"
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "https://kinoox.ru/api/v1",
+      "socketUrl": "https://kinoox.ru",
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}

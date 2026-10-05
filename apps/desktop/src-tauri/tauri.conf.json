@@ -1,0 +1,90 @@
+{
+  "productName": "KINOOX",
+  "version": "1.0.0",
+  "identifier": "ru.kinoox.desktop",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "vite",
+    "beforeBuildCommand": "vite build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "KINOOX",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 940,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": false,
+        "center": true,
+        "visible": true,
+        "theme": "Dark",
+        "titleBarStyle": "Overlay",
+        "dragDropEnabled": false,
+        "backgroundColor": "#06070A"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; frame-src https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://kinoox.ru wss://kinoox.ru ipc: http://ipc.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPDATA/**", "$DOWNLOAD/**"]
+      }
+    },
+    "trayIcon": {
+      "id": "main-tray",
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "tooltip": "KINOOX"
+    },
+    "withGlobalTauri": false
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "dmg", "app", "appimage", "deb", "rpm"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "KINOOX",
+    "copyright": "© KINOOX, kinoox.ru",
+    "category": "Entertainment",
+    "shortDescription": "KINOOX — онлайн-кинотеатр нового поколения",
+    "longDescription": "Нативный клиент KINOOX: каталог, плеер с переключением источников Vibix и Veoveo, закладки, история и мини-плеер поверх окон.",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      },
+      "wix": {
+        "language": "ru-RU"
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "frameworks": []
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["https://kinoox.ru/api/v1/downloads/desktop/updates/{{target}}/{{arch}}/{{current_version}}"],
+      "pubkey": "REPLACE_WITH_TAURI_UPDATER_PUBLIC_KEY",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

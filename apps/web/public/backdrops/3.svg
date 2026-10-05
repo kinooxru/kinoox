@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Интерстеллар">
+  <defs>
+    <linearGradient id="bd3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="hsl(195, 62%, 20%)" />
+      <stop offset="50%" stop-color="#0C0E14" />
+      <stop offset="100%" stop-color="#06070A" />
+    </linearGradient>
+    <radialGradient id="bglow3" cx="72%" cy="24%" r="62%">
+      <stop offset="0%" stop-color="hsl(235, 84%, 60%)" stop-opacity="0.34" />
+      <stop offset="100%" stop-color="hsl(235, 84%, 60%)" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="fade3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#06070A" stop-opacity="0.25" />
+      <stop offset="70%" stop-color="#06070A" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#06070A" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bd3)" />
+  <rect width="1600" height="900" fill="url(#bglow3)" />
+
+  <g opacity="0.06" stroke="#F5F7FA" stroke-width="1">
+    <line x1="-600" y1="900" x2="200" y2="0" /><line x1="-510" y1="900" x2="290" y2="0" /><line x1="-420" y1="900" x2="380" y2="0" /><line x1="-330" y1="900" x2="470" y2="0" /><line x1="-240" y1="900" x2="560" y2="0" /><line x1="-150" y1="900" x2="650" y2="0" /><line x1="-60" y1="900" x2="740" y2="0" /><line x1="30" y1="900" x2="830" y2="0" /><line x1="120" y1="900" x2="920" y2="0" /><line x1="210" y1="900" x2="1010" y2="0" /><line x1="300" y1="900" x2="1100" y2="0" /><line x1="390" y1="900" x2="1190" y2="0" /><line x1="480" y1="900" x2="1280" y2="0" /><line x1="570" y1="900" x2="1370" y2="0" /><line x1="660" y1="900" x2="1460" y2="0" /><line x1="750" y1="900" x2="1550" y2="0" /><line x1="840" y1="900" x2="1640" y2="0" /><line x1="930" y1="900" x2="1730" y2="0" /><line x1="1020" y1="900" x2="1820" y2="0" /><line x1="1110" y1="900" x2="1910" y2="0" /><line x1="1200" y1="900" x2="2000" y2="0" /><line x1="1290" y1="900" x2="2090" y2="0" /><line x1="1380" y1="900" x2="2180" y2="0" /><line x1="1470" y1="900" x2="2270" y2="0" /><line x1="1560" y1="900" x2="2360" y2="0" /><line x1="1650" y1="900" x2="2450" y2="0" />
+  </g>
+
+  <text x="120" y="470" font-family="Space Grotesk, Inter, sans-serif" font-size="96"
+        font-weight="700" fill="rgba(245,247,250,0.08)">Интерстеллар</text>
+  <text x="122" y="530" font-family="Inter, sans-serif" font-size="34" fill="rgba(139,146,168,0.35)">Interstellar</text>
+
+  <rect width="1600" height="900" fill="url(#fade3)" />
+</svg>

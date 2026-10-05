@@ -1,0 +1,86 @@
+# ─────────────────────────────────────────────────────────────
+#  KINOOX — Alertmanager: маршрутизация и группировка алертов
+# ─────────────────────────────────────────────────────────────
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@kinoox.ru'
+  smtp_require_tls: false
+
+# Шаблоны уведомлений
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'service', 'tier']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  routes:
+    # Критичные алерты — сразу, с коротким повтором
+    - matchers:
+        - severity = critical
+      receiver: 'critical'
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 1h
+      continue: true
+
+    # Предупреждения — реже
+    - matchers:
+        - severity = warning
+      receiver: 'warning'
+      repeat_interval: 12h
+
+    # Информационные — только в лог
+    - matchers:
+        - severity = info
+      receiver: 'default'
+
+inhibit_rules:
+  # Если сервис полностью недоступен, не шлём сопутствующие алерты о нагрузке
+  - source_matchers:
+      - alertname = ApiDown
+    target_matchers:
+      - severity =~ 'warning|info'
+    equal: ['service']
+
+  # Ошибки 5xx подавляем при полном падении API
+  - source_matchers:
+      - alertname =~ 'ApiDown|NginxDown'
+    target_matchers:
+      - alertname =~ 'ApiHighErrorRate|ApiSlowResponses'
+    equal: ['service']
+
+  # О перезапусках контейнера не сообщаем, если уже известно о нехватке памяти
+  - source_matchers:
+      - alertname = HighMemoryUsage
+    target_matchers:
+      - alertname = ContainerRestarted
+
+receivers:
+  - name: 'default'
+    # Заглушка: пишем алерты в лог Alertmanager
+    webhook_configs: []
+
+  - name: 'critical'
+    # Почта администратора — основной канал для критичных сбоев
+    email_configs:
+      - to: 'admin@kinoox.ru'
+        send_resolved: true
+        headers:
+          Subject: '[KINOOX] КРИТИЧНО: {{ .GroupLabels.alertname }}'
+    webhook_configs:
+      - url: 'http://localhost:9093/-/noop'
+        send_resolved: true
+        url_file: ''
+
+  - name: 'warning'
+    email_configs:
+      - to: 'admin@kinoox.ru'
+        send_resolved: true
+        headers:
+          Subject: '[KINOOX] Предупреждение: {{ .GroupLabels.alertname }}'
