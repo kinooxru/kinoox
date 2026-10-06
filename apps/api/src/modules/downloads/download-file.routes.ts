@@ -63,7 +63,7 @@ export default async function downloadStaticRoutes(
     const contentType = MIME_TYPES[ext] ?? 'application/octet-stream'
 
     // Регистрируем скачивание в базе данных (увеличивает счётчик реальных загрузок)
-    await downloadsService.registerDownload(safePlatform).catch(() => undefined)
+    await downloadsService.registerDownload(safePlatform as any).catch(() => undefined)
 
     reply
       .header('Content-Type', contentType)
