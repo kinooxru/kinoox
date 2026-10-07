@@ -36,7 +36,7 @@ services:
   #  PostgreSQL 16 — основная база данных
   # ───────────────────────────────────────────────────────────
   postgres:
-    <<: [*restart-policy, *default-logging, *security-hardening]
+    <<: [*restart-policy, *default-logging]
     image: postgres:16
     container_name: kinoox-postgres
     stop_grace_period: 60s
