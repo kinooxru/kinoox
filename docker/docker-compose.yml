@@ -527,7 +527,7 @@ services:
   # ───────────────────────────────────────────────────────────
   localstack:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: localstack/localstack:latest
+    image: localstack/localstack:2.1
     container_name: kinoox-localstack
     stop_grace_period: 15s
     deploy:
@@ -571,7 +571,7 @@ services:
   # ───────────────────────────────────────────────────────────
   localstack-init:
     <<: *security-hardening
-    image: localstack/cli:latest
+    image: localstack/cli:2.1
     container_name: kinoox-localstack-init
     restart: "no"
     depends_on:
