@@ -100,7 +100,7 @@ services:
         soft: 4096
         hard: 4096
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - /opt/kinoox/data/pg_data:/var/lib/postgresql/data
       - ../docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
@@ -886,10 +886,6 @@ services:
 #  ТОМА
 # ─────────────────────────────────────────────────────────────
 volumes:
-  pg_data:
-    driver: local
-  pg_stat_tmp:
-    driver: local
   pg_run:
     driver: local
   redis_data:
