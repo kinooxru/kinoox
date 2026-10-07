@@ -8,7 +8,7 @@
 import type { FastifyInstance } from 'fastify'
 import type { Server as SocketServer } from 'socket.io'
 import type { NotificationDTO } from '@kinoox/api-client'
-import type { JwtPayload } from '../../core/plugins/jwt.plugin'
+import type { JwtPayload } from '../../core/plugins/jwt.plugin.js'
 
 export interface NotificationsServiceDeps {
   /** Socket.io-сервер поднимается в server.ts */

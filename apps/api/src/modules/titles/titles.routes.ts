@@ -10,7 +10,7 @@ import {
   makeGetTitles,
   makeUpsertTitle,
   type TitlesControllerDeps,
-} from './titles.controller'
+} from './titles.controller.js'
 
 export interface TitlesRoutesOptions {
   deps: TitlesControllerDeps

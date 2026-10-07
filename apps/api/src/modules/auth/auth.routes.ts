@@ -5,7 +5,7 @@ import {
   makeRefresh,
   makeRegister,
   type AuthControllerDeps,
-} from './auth.controller'
+} from './auth.controller.js'
 
 export interface AuthRoutesOptions {
   deps: AuthControllerDeps

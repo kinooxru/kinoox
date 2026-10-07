@@ -4,8 +4,8 @@
  */
 import type { PrismaClient } from '@prisma/client'
 import type { BookmarkDTO, BookmarkStatus, PaginatedResponse } from '@kinoox/api-client'
-import { notFound } from '../../core/types'
-import { paginated, toNumber } from '../../utils'
+import { notFound } from '../../core/types.js'
+import { paginated, toNumber } from '../../utils.js'
 
 const TITLE_CARD_SELECT = {
   id: true,

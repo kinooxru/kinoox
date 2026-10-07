@@ -2,10 +2,10 @@
  * HTTP-обработчики модуля пользователей.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { requireUser } from '../../core/middleware/auth.middleware'
-import { ok } from '../../utils'
-import { historyInputSchema, historyQuerySchema, updateProfileSchema } from './users.schema'
-import type { UsersService } from './users.service'
+import { requireUser } from '../../core/middleware/auth.middleware.js'
+import { ok } from '../../utils.js'
+import { historyInputSchema, historyQuerySchema, updateProfileSchema } from './users.schema.js'
+import type { UsersService } from './users.service.js'
 
 export interface UsersControllerDeps {
   usersService: UsersService

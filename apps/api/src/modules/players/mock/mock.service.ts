@@ -6,7 +6,7 @@
  * с реальными сервисами.
  */
 import type { BalancerName, PlayerSource, SeasonInfo } from '@kinoox/api-client'
-import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types'
+import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types.js'
 
 export class MockBalancerService implements IBalancerService {
   readonly name: BalancerName

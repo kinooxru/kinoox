@@ -5,7 +5,7 @@ import {
   makeSubscribe,
   makeUnsubscribe,
   type NotificationsControllerDeps,
-} from './notifications.controller'
+} from './notifications.controller.js'
 
 export interface NotificationsRoutesOptions {
   deps: NotificationsControllerDeps

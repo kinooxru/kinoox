@@ -4,9 +4,9 @@
  * Авторизация — `Authorization: Bearer <token>`, токен берётся из личного кабинета.
  * Документация: doc/VEOVEO/Webmaster API Руководство по применению.txt
  */
-import { config } from '../../../config'
+import { config } from '../../../config.js'
 import type { BalancerName, PlayerSource, SeasonInfo } from '@kinoox/api-client'
-import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types'
+import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types.js'
 import type {
   VeoveoContentDetailDto,
   VeoveoContentFilterDto,
@@ -14,7 +14,7 @@ import type {
   VeoveoCountry,
   VeoveoGenre,
   VeoveoPaginationWrapper,
-} from './veoveo.types'
+} from './veoveo.types.js'
 
 const PLAYER_DOMAIN_ACTUALIZE_URL = 'https://super-puper.che-bur-net.cc/actualize?category=player-entry'
 const PLAYER_DOMAIN_REWRITE_SCRIPT = 'https://super-puper.che-bur-net.cc/vv2.js'

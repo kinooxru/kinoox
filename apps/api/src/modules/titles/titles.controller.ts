@@ -2,9 +2,9 @@
  * Тонкие HTTP-обработчики каталога: валидация → сервис → ответ.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { ok, paginated } from '../../utils'
-import { relatedQuerySchema, titleFilterSchema, titleIdParamSchema, upsertTitleSchema } from './titles.schema'
-import type { TitlesService } from './titles.service'
+import { ok, paginated } from '../../utils.js'
+import { relatedQuerySchema, titleFilterSchema, titleIdParamSchema, upsertTitleSchema } from './titles.schema.js'
+import type { TitlesService } from './titles.service.js'
 
 export interface TitlesControllerDeps {
   titlesService: TitlesService

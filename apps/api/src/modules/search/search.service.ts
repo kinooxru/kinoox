@@ -6,8 +6,8 @@
  */
 import type { PrismaClient } from '@prisma/client'
 import type { PaginatedResponse, SearchResultDTO, TitleCardDTO } from '@kinoox/api-client'
-import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
-import { normalizeQuery, paginated, toNumber } from '../../utils'
+import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin.js'
+import { normalizeQuery, paginated, toNumber } from '../../utils.js'
 
 const CARD_SELECT = {
   id: true,

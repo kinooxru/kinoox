@@ -2,9 +2,9 @@
  * HTTP-обработчики модуля поиска.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { ok } from '../../utils'
-import { searchQuerySchema, suggestQuerySchema, trendingQuerySchema } from './search.schema'
-import type { SearchService } from './search.service'
+import { ok } from '../../utils.js'
+import { searchQuerySchema, suggestQuerySchema, trendingQuerySchema } from './search.schema.js'
+import type { SearchService } from './search.service.js'
 
 export interface SearchControllerDeps {
   searchService: SearchService

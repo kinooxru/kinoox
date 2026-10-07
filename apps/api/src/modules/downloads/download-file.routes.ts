@@ -1,8 +1,8 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { notFound } from '../../core/types'
-import type { DownloadsService } from './downloads.service'
+import { notFound } from '../../core/types.js'
+import type { DownloadsService } from './downloads.service.js'
 
 export interface DownloadStaticRoutesOptions {
   deps: {

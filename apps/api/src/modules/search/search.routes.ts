@@ -6,7 +6,7 @@ import {
   makeSuggest,
   makeTrending,
   type SearchControllerDeps,
-} from './search.controller'
+} from './search.controller.js'
 
 export interface SearchRoutesOptions {
   deps: SearchControllerDeps

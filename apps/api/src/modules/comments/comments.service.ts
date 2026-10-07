@@ -3,8 +3,8 @@
  */
 import type { PrismaClient } from '@prisma/client'
 import type { CommentDTO, PaginatedResponse } from '@kinoox/api-client'
-import { forbidden, notFound } from '../../core/types'
-import { paginated, sanitizeText } from '../../utils'
+import { forbidden, notFound } from '../../core/types.js'
+import { paginated, sanitizeText } from '../../utils.js'
 
 const USER_SELECT = { id: true, username: true, avatarUrl: true } as const
 

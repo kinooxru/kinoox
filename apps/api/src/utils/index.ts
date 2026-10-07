@@ -2,7 +2,7 @@
  * Общие утилиты API.
  */
 import { createHash } from 'node:crypto'
-import type { ApiEnvelope, Paginated } from '../core/types'
+import type { ApiEnvelope, Paginated } from '../core/types.js'
 
 /** Успешный ответ в едином конверте */
 export function ok<T>(data: T): ApiEnvelope<T> {

@@ -2,15 +2,15 @@
  * HTTP-обработчики модуля комментариев.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { requireUser } from '../../core/middleware/auth.middleware'
-import { ok } from '../../utils'
+import { requireUser } from '../../core/middleware/auth.middleware.js'
+import { ok } from '../../utils.js'
 import {
   commentIdParamSchema,
   commentsQuerySchema,
   createCommentSchema,
   titleCommentsParamSchema,
-} from './comments.schema'
-import type { CommentsService } from './comments.service'
+} from './comments.schema.js'
+import type { CommentsService } from './comments.service.js'
 
 export interface CommentsControllerDeps {
   commentsService: CommentsService
