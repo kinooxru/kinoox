@@ -61,6 +61,14 @@ COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/prisma ./apps/api/prisma
 COPY --from=build /repo/apps/api/package.json ./apps/api/package.json
 
+# Предзагрузка Prisma query engine (обходит DNS проблемы при запуске)
+RUN cd /app/apps/api && npx prisma generate 2>/dev/null || true
+
+# Пользователь без root-прав
+RUN groupadd --system --gid 1001 kinoox \
+    && useradd --system --uid 1001 --gid kinoox --create-home kinoox \
+    && chown -R kinoox:kinoox /app
+
 # Пользователь без root-прав
 RUN groupadd --system --gid 1001 kinoox \
     && useradd --system --uid 1001 --gid kinoox --create-home kinoox \
@@ -69,6 +77,9 @@ RUN groupadd --system --gid 1001 kinoox \
 USER kinoox
 
 WORKDIR /app/apps/api
+
+# Предзагрузка Prisma query engine бинарников
+RUN npx prisma generate 2>/dev/null || true
 
 EXPOSE 3001
 
