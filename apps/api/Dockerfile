@@ -34,8 +34,7 @@ WORKDIR /repo/apps/api
 RUN pnpm exec prisma generate
 
 # Сборка TypeScript в dist
-RUN pnpm exec tsc -p tsconfig.build.json && \
-    npx tsc-alias -p tsconfig.build.json
+RUN pnpm exec tsc -p tsconfig.build.json
 
 # Оставляем только продуктовые зависимости
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
