@@ -527,7 +527,7 @@ services:
   # ───────────────────────────────────────────────────────────
   minio:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: minio/minio:RELEASE.2025-01-20T16-29-0Z
+    image: public.ecr.aws/minio/minio:RELEASE.2025-01-20T16-29-0Z
     container_name: kinoox-minio
     stop_grace_period: 15s
     cap_add:
@@ -574,7 +574,7 @@ services:
   # ───────────────────────────────────────────────────────────
   minio-init:
     <<: *security-hardening
-    image: minio/mc:RELEASE.2025-01-20T16-29-0Z
+    image: public.ecr.aws/minio/mc:RELEASE.2025-01-20T16-29-0Z
     container_name: kinoox-minio-init
     restart: "no"
     depends_on:
