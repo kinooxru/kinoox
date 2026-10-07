@@ -35,6 +35,7 @@ RUN pnpm exec prisma generate
 
 # Сборка TypeScript в dist
 RUN pnpm exec tsc -p tsconfig.build.json
+RUN npx tsc-alias
 
 # Оставляем только продуктовые зависимости
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
