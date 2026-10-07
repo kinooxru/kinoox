@@ -7,7 +7,10 @@
     "declaration": false,
     "declarationMap": false,
     "incremental": false,
-    "noEmit": false
+    "noEmit": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true
   },
   // В сборку входит только серверный код: seed запускается через tsx
   "include": ["src/**/*.ts"],
