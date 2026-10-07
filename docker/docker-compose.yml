@@ -527,7 +527,7 @@ services:
   # ───────────────────────────────────────────────────────────
   minio:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: kinoox-minio
     stop_grace_period: 15s
     cap_add:
@@ -574,7 +574,7 @@ services:
   # ───────────────────────────────────────────────────────────
   minio-init:
     <<: *security-hardening
-    image: minio/mc:latest
+    image: quay.io/minio/mc:latest
     container_name: kinoox-minio-init
     restart: "no"
     depends_on:
