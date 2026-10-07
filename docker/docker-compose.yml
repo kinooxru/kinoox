@@ -100,13 +100,13 @@ services:
         hard: 4096
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - pg_stat_tmp:/var/lib/postgresql/data/pg_stat_tmp
       - ../docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
       - pg_run:/var/run/postgresql
     tmpfs:
       - /tmp:size=512M
+      - /var/lib/postgresql/data/pg_stat_tmp:size=128M
     networks:
       kinoox_backend:
         aliases:
