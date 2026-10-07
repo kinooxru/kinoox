@@ -102,7 +102,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - pg_stat_tmp:/var/lib/postgresql/data/pg_stat_tmp
-      - ../docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # - ../docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ../docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
