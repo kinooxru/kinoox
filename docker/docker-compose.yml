@@ -200,8 +200,11 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    extra_hosts:
+      - "binaries.prisma.sh:104.16.71.184"
     command: >
       sh -c "
+        echo '104.16.71.184 binaries.prisma.sh' >> /etc/hosts;
         echo '=== KINOOX Migration Runner ==='
         attempt=1
         max_attempts=30
