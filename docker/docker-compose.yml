@@ -223,18 +223,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - kinoox_backend
     env_file:
       - ../.env
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@localhost:5432/${DB_NAME:-kinoox_db}?schema=public
       TZ: Europe/Moscow
-      DOCKER_HOST: unix:///var/run/docker.sock
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     logging:
       driver: json-file
       options:
