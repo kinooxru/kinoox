@@ -56,7 +56,6 @@ services:
       POSTGRES_USER: ${DB_USER:-kinoox}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Задайте DB_PASSWORD в .env}
       POSTGRES_DB: ${DB_NAME:-kinoox_db}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
       TZ: Europe/Moscow
     command: >
       postgres
@@ -102,7 +101,6 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       - pg_stat_tmp:/var/lib/postgresql/data/pg_stat_tmp
-      # - ../docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ../docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
