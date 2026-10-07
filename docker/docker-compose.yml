@@ -230,6 +230,9 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-kinoox_db}?schema=public
       TZ: Europe/Moscow
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     logging:
       driver: json-file
       options:
@@ -493,7 +496,7 @@ services:
   # ───────────────────────────────────────────────────────────
   pg-backup:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: kinoox-pg-backup
     cap_add:
       - DAC_OVERRIDE
@@ -507,7 +510,8 @@ services:
     entrypoint: >
       sh -c "
         echo '=== KINOOX PostgreSQL Backup ===';
-        mkdir -p /backups/wal_archive;
+        apk add --no-cache cronie postgresql-client > /dev/null 2>&1;
+        mkdir -p /backups/wal_archive /etc/crontabs;
         echo '0 2 * * * pg_dump -Fc -f /backups/kinoox_$$(date +\%Y\%m\%d_\%H\%M).dump && find /backups -name \"*.dump\" -mtime +'$${RETENTION_DAYS:-30}' -delete' > /etc/crontabs/root;
         crond -f -l 8
       "
@@ -580,10 +584,9 @@ services:
     entrypoint: >
       sh -c "
         echo '=== LocalStack Init ===';
-        awslocal s3 mb s3://downloads --ignore-existing || true;
-        awslocal s3 mb s3://screenshots --ignore-existing || true;
-        awslocal s3 mb s3://backups --ignore-existing || true;
-        awslocal s3api put-bucket-acl --bucket downloads --acl public-read || true;
+        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://downloads || true;
+        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://screenshots || true;
+        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://backups || true;
         echo 'Buckets созданы.';
       "
     networks:
@@ -627,7 +630,7 @@ services:
   # ───────────────────────────────────────────────────────────
   watchtower:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: containrrr/watchtower
+    image: containrrr/watchtower:v1.5
     container_name: kinoox-watchtower
     cap_add:
       - DAC_OVERRIDE
