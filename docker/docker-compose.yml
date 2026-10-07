@@ -571,7 +571,7 @@ services:
   # ───────────────────────────────────────────────────────────
   localstack-init:
     <<: *security-hardening
-    image: amazon/aws-cli:2.15
+    image: amazon/aws-cli:2
     container_name: kinoox-localstack-init
     restart: "no"
     depends_on:
