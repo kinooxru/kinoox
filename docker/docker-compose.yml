@@ -523,76 +523,74 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"
 
   # ───────────────────────────────────────────────────────────
-  #  MinIO — S3-совместимое хранилище файлов сборок
+  #  LocalStack — S3-совместимое хранилище (аналог MinIO)
   # ───────────────────────────────────────────────────────────
-  minio:
+  localstack:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: public.ecr.aws/docker/library/minio:latest
-    container_name: kinoox-minio
+    image: localstack/localstack:latest
+    container_name: kinoox-localstack
     stop_grace_period: 15s
-    cap_add:
-      - CHOWN
-      - SETUID
-      - SETGID
     deploy:
       resources:
         limits:
           memory: 2G
         reservations:
-          memory: 256M
-    command: server /data --console-address ":9001"
+          memory: 512M
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kinooxadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Задайте MINIO_ROOT_PASSWORD в .env}
-      MINIO_DOMAIN: minio.kinoox.ru
+      SERVICES: s3
+      DEBUG: "0"
+      LS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-kinooxadmin}
+      LS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
       TZ: Europe/Moscow
     ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4571:4571"
     volumes:
-      - minio_data:/data
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       kinoox_frontend:
         aliases:
-          - minio
+          - localstack
       kinoox_backend:
         aliases:
-          - minio
+          - localstack
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 20s
+      retries: 5
+      start_period: 30s
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "kinoox.service=storage"
       - "kinoox.tier=important"
 
   # ───────────────────────────────────────────────────────────
-  #  MinIO Init — создание buckets при первом запуске
+  #  LocalStack Init — создание buckets при первом запуске
   # ───────────────────────────────────────────────────────────
-  minio-init:
+  localstack-init:
     <<: *security-hardening
-    image: public.ecr.aws/minio/mc:latest
-    container_name: kinoox-minio-init
+    image: localstack/cli:latest
+    container_name: kinoox-localstack-init
     restart: "no"
     depends_on:
-      minio:
+      localstack:
         condition: service_healthy
     entrypoint: >
       sh -c "
-        echo '=== MinIO Init ===';
-        until mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
-          echo 'Ждём MinIO...';
-          sleep 2;
-        done;
-        mc mb kinoox/downloads --ignore-existing;
-        mc mb kinoox/screenshots --ignore-existing;
-        mc mb kinoox/backups --ignore-existing;
-        mc anonymous set download kinoox/downloads;
+        echo '=== LocalStack Init ===';
+        aws --endpoint-url=http://localstack:4566 --region us-east-0 config set output json;
+        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://downloads --ignore-existing;
+        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://screenshots --ignore-existing;
+        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://backups --ignore-existing;
+        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3api put-bucket-acl --bucket downloads --acl public-read;
         echo 'Buckets созданы.';
       "
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-kinooxadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-0
     networks:
       - kinoox_backend
     logging:
@@ -898,7 +896,7 @@ volumes:
     driver: local
   nginx_tmp:
     driver: local
-  minio_data:
+  localstack_data:
     driver: local
   prometheus_data:
     driver: local
