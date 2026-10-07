@@ -571,7 +571,7 @@ services:
   # ───────────────────────────────────────────────────────────
   localstack-init:
     <<: *security-hardening
-    image: localstack/cli:2.1
+    image: amazon/aws-cli:2.15
     container_name: kinoox-localstack-init
     restart: "no"
     depends_on:
@@ -580,17 +580,17 @@ services:
     entrypoint: >
       sh -c "
         echo '=== LocalStack Init ===';
-        aws --endpoint-url=http://localstack:4566 --region us-east-0 config set output json;
-        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://downloads --ignore-existing;
-        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://screenshots --ignore-existing;
-        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3 mb s3://backups --ignore-existing;
-        aws --endpoint-url=http://localstack:4566 --region us-east-0 s3api put-bucket-acl --bucket downloads --acl public-read;
+        aws s3 mb s3://downloads --ignore-existing;
+        aws s3 mb s3://screenshots --ignore-existing;
+        aws s3 mb s3://backups --ignore-existing;
+        aws s3api put-bucket-acl --bucket downloads --acl public-read;
         echo 'Buckets созданы.';
       "
     environment:
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-kinooxadmin}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
       AWS_DEFAULT_REGION: us-east-0
+      AWS_ENDPOINT_URL: http://localstack:4566
     networks:
       - kinoox_backend
     logging:
