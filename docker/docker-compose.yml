@@ -43,6 +43,7 @@ services:
     shm_size: 2gb
     cap_add:
       - CHOWN
+      - FOWNER
       - SETUID
       - SETGID
       - DAC_OVERRIDE
