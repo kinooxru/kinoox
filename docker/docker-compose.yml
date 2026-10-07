@@ -191,11 +191,12 @@ services:
   #  Prisma Migrations — one-shot: применяет схему и seed
   # ───────────────────────────────────────────────────────────
   migrate:
-    <<: *security-hardening
+    <<: *default-logging
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
     container_name: kinoox-migrate
+    network_mode: host
     restart: "no"
     command: >
       sh -c "
@@ -228,8 +229,9 @@ services:
       - ../.env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-kinoox_db}?schema=public
+      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@localhost:5432/${DB_NAME:-kinoox_db}?schema=public
       TZ: Europe/Moscow
+      DOCKER_HOST: unix:///var/run/docker.sock
     dns:
       - 8.8.8.8
       - 8.8.4.4
@@ -277,7 +279,7 @@ services:
     environment:
       NODE_ENV: production
       TZ: Europe/Moscow
-      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-kinoox_db}?schema=public
+      DATABASE_URL: postgresql://${DB_USER:-kinoox}:${DB_PASSWORD}@localhost:5432/${DB_NAME:-kinoox_db}?schema=public
       REDIS_URL: redis://redis:6379
       API_PORT: 3001
       API_HOST: 0.0.0.0
