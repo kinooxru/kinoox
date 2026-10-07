@@ -200,27 +200,26 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    command: >
-        echo '=== KINOOX Migration Runner ==='
-        attempt=1
-        max_attempts=30
-        while [ $$attempt -le $$max_attempts ]; do
-          if npx prisma migrate deploy; then
-            echo 'Migrations applied successfully'
-            break
-          fi
-          echo 'Attempt '$$attempt'/'$$max_attempts': retry in 5 seconds'
-          sleep 5
-          attempt=$$((attempt + 1))
-        done
-        if [ $$attempt -gt $$max_attempts ]; then
-          echo 'ERROR: failed to apply migrations'
-          exit 1
+    command: |
+      echo '=== KINOOX Migration Runner ==='
+      attempt=1
+      max_attempts=30
+      while [ $$attempt -le $$max_attempts ]; do
+        if npx prisma migrate deploy; then
+          echo 'Migrations applied successfully'
+          break
         fi
-        echo 'Running seed...'
-        npx prisma db seed
-        echo '=== Migration and seed completed ==='
-      "
+        echo 'Attempt '$$attempt'/'$$max_attempts': retry in 5 seconds'
+        sleep 5
+        attempt=$$((attempt + 1))
+      done
+      if [ $$attempt -gt $$max_attempts ]; then
+        echo 'ERROR: failed to apply migrations'
+        exit 1
+      fi
+      echo 'Running seed...'
+      npx prisma db seed
+      echo '=== Migration and seed completed ==='
     depends_on:
       postgres:
         condition: service_healthy
