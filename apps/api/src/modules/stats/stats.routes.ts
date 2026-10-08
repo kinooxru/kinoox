@@ -1,8 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import type { SystemStatsDTO } from '@kinoox/api-client'
-import { cacheKeys } from '../../core/plugins/cache.plugin.js'
-import { ok } from '../../utils.js'
-import type { DownloadsService } from '../downloads/downloads.service.js'
+import { cacheKeys } from '../../core/plugins/cache.plugin'
+import { ok } from '../../utils'
+import type { DownloadsService } from '../downloads/downloads.service'
 
 export interface StatsRoutesDeps {
   downloadsService: DownloadsService

@@ -2,15 +2,15 @@
  * HTTP-обработчики модуля закладок.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { requireUser } from '../../core/middleware/auth.middleware.js'
-import { ok } from '../../utils.js'
+import { requireUser } from '../../core/middleware/auth.middleware'
+import { ok } from '../../utils'
 import {
   bookmarkQuerySchema,
   bookmarkTitleParamSchema,
   createBookmarkSchema,
   updateBookmarkSchema,
-} from './bookmarks.schema.js'
-import type { BookmarksService } from './bookmarks.service.js'
+} from './bookmarks.schema'
+import type { BookmarksService } from './bookmarks.service'
 
 export interface BookmarksControllerDeps {
   bookmarksService: BookmarksService

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { generateQrSvg } from './qr'
+import { generateQrSvg } from '../../../../../../apps/api/src/modules/downloads/qr'
 
 export const dynamic = 'force-dynamic'
 

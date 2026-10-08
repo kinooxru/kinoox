@@ -5,7 +5,7 @@ import {
   makeGetComments,
   makeLikeComment,
   type CommentsControllerDeps,
-} from './comments.controller.js'
+} from './comments.controller'
 
 export interface CommentsRoutesOptions {
   deps: CommentsControllerDeps

@@ -4,9 +4,9 @@
  * Поднимает Fastify, навешивает Socket.io на тот же HTTP-сервер,
  * обрабатывает сигналы завершения для корректного graceful shutdown.
  */
-import { buildServer } from './app.js'
-import { config } from './config/index.js'
-import { createSocketServer } from './realtime/socket.js'
+import { buildServer } from './app'
+import { config } from './config'
+import { createSocketServer } from './realtime/socket'
 
 async function main(): Promise<void> {
   let socketServer: ReturnType<typeof createSocketServer> | null = null

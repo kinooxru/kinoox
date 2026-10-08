@@ -12,10 +12,10 @@ import type {
   TitleStatus,
   TitleType,
 } from '@kinoox/api-client'
-import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin.js'
-import { notFound } from '../../core/types.js'
-import { hashParams, toNumber } from '../../utils.js'
-import type { TitleListFilter, TitleUpsertInput } from './titles.types.js'
+import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
+import { notFound } from '../../core/types'
+import { hashParams, toNumber } from '../../utils'
+import type { TitleListFilter, TitleUpsertInput } from './titles.types'
 
 const CARD_SELECT = {
   id: true,

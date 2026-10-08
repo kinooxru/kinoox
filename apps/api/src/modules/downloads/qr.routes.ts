@@ -7,7 +7,7 @@
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { generateQrSvg } from './qr.js'
+import { generateQrSvg } from './qr'
 
 const qrQuerySchema = z.object({
   data: z.string().min(1, 'Не переданы данные').max(1024, 'Данные слишком длинные'),

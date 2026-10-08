@@ -5,7 +5,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ZodError } from 'zod'
-import { HttpError } from '../types.js'
+import { HttpError } from '../types'
 
 /** Минимальная форма ошибки Fastify, нужная обработчику */
 interface FastifyLikeError extends Error {

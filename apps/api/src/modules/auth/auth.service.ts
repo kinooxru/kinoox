@@ -6,9 +6,9 @@ import { createHash } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import type { PrismaClient } from '@prisma/client'
 import type { AuthResultDTO, AuthTokensDTO, UserDTO } from '@kinoox/api-client'
-import { config } from '../../config.js'
-import { conflict, unauthorized } from '../../core/types.js'
-import type { JwtPayload } from '../../core/plugins/jwt.plugin.js'
+import { config } from '../../config'
+import { conflict, unauthorized } from '../../core/types'
+import type { JwtPayload } from '../../core/plugins/jwt.plugin'
 
 const BCRYPT_ROUNDS = 12
 

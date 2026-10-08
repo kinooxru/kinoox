@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
-import playersRoutes, { type PlayersControllerDeps } from './players.controller.js'
-import vibixEmbedRoutes from './vibix/vibix.embed.routes.js'
+import playersRoutes, { type PlayersControllerDeps } from './players.controller'
+import vibixEmbedRoutes from './vibix/vibix.embed.routes'
 
 export interface PlayersRoutesOptions {
   deps: PlayersControllerDeps

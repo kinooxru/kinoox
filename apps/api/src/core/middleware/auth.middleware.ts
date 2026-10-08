@@ -6,8 +6,8 @@
  * `adminGuard`  — требует роль admin.
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import type { JwtPayload } from '../plugins/jwt.plugin.js'
-import { forbidden, unauthorized } from '../types.js'
+import type { JwtPayload } from '../plugins/jwt.plugin'
+import { forbidden, unauthorized } from '../types'
 
 /** Тот же формат, что и у AccessPayload: `sub` — ID пользователя */
 export type { JwtPayload }

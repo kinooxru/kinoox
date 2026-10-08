@@ -7,7 +7,7 @@ import {
   makeGetProfile,
   makeUpdateProfile,
   type UsersControllerDeps,
-} from './users.controller.js'
+} from './users.controller'
 
 export interface UsersRoutesOptions {
   deps: UsersControllerDeps

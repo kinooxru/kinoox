@@ -7,7 +7,7 @@ import {
   makeRemoveBookmark,
   makeUpdateBookmark,
   type BookmarksControllerDeps,
-} from './bookmarks.controller.js'
+} from './bookmarks.controller'
 
 export interface BookmarksRoutesOptions {
   deps: BookmarksControllerDeps

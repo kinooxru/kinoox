@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { CatalogSyncService } from './catalog.sync.service.js'
+import { CatalogSyncService } from './catalog.sync.service'
 import type { PrismaClient } from '@prisma/client'
 
 test('selectBestPoster chooses remote URL over local svg placeholders', () => {

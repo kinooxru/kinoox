@@ -36,14 +36,13 @@ services:
   #  PostgreSQL 16 — основная база данных
   # ───────────────────────────────────────────────────────────
   postgres:
-    <<: [*restart-policy, *default-logging]
+    <<: [*restart-policy, *default-logging, *security-hardening]
     image: postgres:16
     container_name: kinoox-postgres
     stop_grace_period: 60s
     shm_size: 2gb
     cap_add:
       - CHOWN
-      - FOWNER
       - SETUID
       - SETGID
       - DAC_OVERRIDE
@@ -57,6 +56,7 @@ services:
       POSTGRES_USER: ${DB_USER:-kinoox}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Задайте DB_PASSWORD в .env}
       POSTGRES_DB: ${DB_NAME:-kinoox_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
       TZ: Europe/Moscow
     command: >
       postgres
@@ -76,6 +76,7 @@ services:
       -c log_lock_waits=on
       -c log_temp_files=0
       -c log_autovacuum_min_duration=0
+      -c stats_temp_directory=/var/lib/postgresql/data/pg_stat_tmp
       -c timezone=Europe/Moscow
       -c track_activity_query_size=2048
       -c track_io_timing=on
@@ -100,6 +101,8 @@ services:
         hard: 4096
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - pg_stat_tmp:/var/lib/postgresql/data/pg_stat_tmp
+      - ../docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ../docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
@@ -191,35 +194,34 @@ services:
   #  Prisma Migrations — one-shot: применяет схему и seed
   # ───────────────────────────────────────────────────────────
   migrate:
-    <<: *default-logging
+    <<: *security-hardening
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
     container_name: kinoox-migrate
     restart: "no"
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    command: |
-      echo '=== KINOOX Migration Runner ==='
-      attempt=1
-      max_attempts=30
-      while [ $$attempt -le $$max_attempts ]; do
-        if npx prisma migrate deploy; then
-          echo 'Migrations applied successfully'
-          break
+    command: >
+      sh -c "
+        echo '=== KINOOX Migration Runner ==='
+        attempt=1
+        max_attempts=30
+        while [ $$attempt -le $$max_attempts ]; do
+          if npx prisma migrate deploy; then
+            echo 'Migrations applied successfully'
+            break
+          fi
+          echo 'Attempt '$$attempt'/'$$max_attempts': retry in 5 seconds'
+          sleep 5
+          attempt=$$((attempt + 1))
+        done
+        if [ $$attempt -gt $$max_attempts ]; then
+          echo 'ERROR: failed to apply migrations'
+          exit 1
         fi
-        echo 'Attempt '$$attempt'/'$$max_attempts': retry in 5 seconds'
-        sleep 5
-        attempt=$$((attempt + 1))
-      done
-      if [ $$attempt -gt $$max_attempts ]; then
-        echo 'ERROR: failed to apply migrations'
-        exit 1
-      fi
-      echo 'Running seed...'
-      npx prisma db seed
-      echo '=== Migration and seed completed ==='
+        echo 'Running seed...'
+        npx prisma db seed
+        echo '=== Migration and seed completed ==='
+      "
     depends_on:
       postgres:
         condition: service_healthy
@@ -508,8 +510,7 @@ services:
     entrypoint: >
       sh -c "
         echo '=== KINOOX PostgreSQL Backup ===';
-        apt-get update && apt-get install -y cron postgresql-client > /dev/null 2>&1;
-        mkdir -p /backups/wal_archive /etc/crontabs;
+        mkdir -p /backups/wal_archive;
         echo '0 2 * * * pg_dump -Fc -f /backups/kinoox_$$(date +\%Y\%m\%d_\%H\%M).dump && find /backups -name \"*.dump\" -mtime +'$${RETENTION_DAYS:-30}' -delete' > /etc/crontabs/root;
         crond -f -l 8
       "
@@ -525,66 +526,74 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"
 
   # ───────────────────────────────────────────────────────────
-  #  LocalStack — S3-совместимое хранилище (аналог MinIO)
+  #  MinIO — S3-совместимое хранилище файлов сборок
   # ───────────────────────────────────────────────────────────
-  localstack:
+  minio:
     <<: [*restart-policy, *default-logging, *security-hardening]
-    image: localstack/localstack:2.1
-    container_name: kinoox-localstack
+    image: minio/minio:latest
+    container_name: kinoox-minio
     stop_grace_period: 15s
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
     deploy:
       resources:
         limits:
           memory: 2G
         reservations:
-          memory: 512M
+          memory: 256M
+    command: server /data --console-address ":9001"
     environment:
-      SERVICES: s3
-      DEBUG: "0"
-      LS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-kinooxadmin}
-      LS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kinooxadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Задайте MINIO_ROOT_PASSWORD в .env}
+      MINIO_DOMAIN: minio.kinoox.ru
       TZ: Europe/Moscow
     ports:
-      - "127.0.0.1:4566:4566"
-      - "127.0.0.1:4571:4571"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
-      - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - minio_data:/data
     networks:
       kinoox_frontend:
         aliases:
-          - localstack
+          - minio
       kinoox_backend:
         aliases:
-          - localstack
+          - minio
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 30s
+      retries: 3
+      start_period: 20s
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "kinoox.service=storage"
       - "kinoox.tier=important"
 
   # ───────────────────────────────────────────────────────────
-  #  LocalStack Init — создание buckets при первом запуске
+  #  MinIO Init — создание buckets при первом запуске
   # ───────────────────────────────────────────────────────────
-  localstack-init:
+  minio-init:
     <<: *security-hardening
-    image: localstack/localstack:2.1
-    container_name: kinoox-localstack-init
+    image: minio/mc:latest
+    container_name: kinoox-minio-init
     restart: "no"
     depends_on:
-      localstack:
+      minio:
         condition: service_healthy
     entrypoint: >
       sh -c "
-        echo '=== LocalStack Init ===';
-        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://downloads || true;
-        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://screenshots || true;
-        AWS_ENDPOINT_URL=http://localstack:4566 awslocal s3 mb s3://backups || true;
+        echo '=== MinIO Init ===';
+        until mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
+          echo 'Ждём MinIO...';
+          sleep 2;
+        done;
+        mc mb kinoox/downloads --ignore-existing;
+        mc mb kinoox/screenshots --ignore-existing;
+        mc mb kinoox/backups --ignore-existing;
+        mc anonymous set download kinoox/downloads;
         echo 'Buckets созданы.';
       "
     networks:
@@ -623,7 +632,29 @@ services:
       - "kinoox.service=adminer"
       - "kinoox.tier=utility"
 
-  # watchtower disabled — Docker API version too old (1.25), requires minimum 1.40
+  # ───────────────────────────────────────────────────────────
+  #  Watchtower — автообновление образов по метке
+  # ───────────────────────────────────────────────────────────
+  watchtower:
+    <<: [*restart-policy, *default-logging, *security-hardening]
+    image: containrrr/watchtower
+    container_name: kinoox-watchtower
+    cap_add:
+      - DAC_OVERRIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: 86400
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      WATCHTOWER_ROLLING_RESTART: "true"
+      TZ: Europe/Moscow
+    command: --label-enable --debug
+    networks:
+      - kinoox_monitoring
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
 
   # ───────────────────────────────────────────────────────────
   #  МОНИТОРИНГ — Prometheus, Grafana, Alertmanager, экспортёры
@@ -858,6 +889,8 @@ services:
 volumes:
   pg_data:
     driver: local
+  pg_stat_tmp:
+    driver: local
   pg_run:
     driver: local
   redis_data:
@@ -870,7 +903,7 @@ volumes:
     driver: local
   nginx_tmp:
     driver: local
-  localstack_data:
+  minio_data:
     driver: local
   prometheus_data:
     driver: local
@@ -893,15 +926,43 @@ networks:
   kinoox_frontend:
     driver: bridge
     name: kinoox_frontend
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.1.0/24
+          gateway: 172.20.1.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-fe
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
+      com.docker.network.driver.mtu: 1500
 
   # Backend — PostgreSQL, Redis, API, MinIO (изолировано от интернета)
   kinoox_backend:
     driver: bridge
     name: kinoox_backend
     internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.2.0/24
+          gateway: 172.20.2.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-be
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.driver.mtu: 1500
 
   # Monitoring — Prometheus, Grafana, экспортёры, Loki (изолировано)
   kinoox_monitoring:
     driver: bridge
     name: kinoox_monitoring
     internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.3.0/24
+          gateway: 172.20.3.1
+    options:
+      com.docker.network.bridge.name: br-kinoox-mon
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.driver.mtu: 1500

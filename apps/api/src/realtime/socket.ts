@@ -12,8 +12,8 @@
  */
 import { Server as SocketServer } from 'socket.io'
 import type { FastifyInstance } from 'fastify'
-import { config } from '../config/index.js'
-import type { JwtPayload } from '../core/plugins/jwt.plugin.js'
+import { config } from '../config'
+import type { JwtPayload } from '../core/plugins/jwt.plugin'
 
 export function createSocketServer(fastify: FastifyInstance): SocketServer {
   const io = new SocketServer(fastify.server, {

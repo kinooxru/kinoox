@@ -8,7 +8,7 @@
 import fastifyJwt from '@fastify/jwt'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import { config } from '../../config.js'
+import { config } from '../../config'
 
 export interface JwtPayload {
   sub: number

@@ -13,15 +13,15 @@
  *   GET /api/v1/publisher/videos/links         — список загруженных видео
  *   GET /api/v1/publisher/videos/get_kpids     — только идентификаторы
  */
-import { config } from '../../../config.js'
+import { config } from '../../../config'
 import type { BalancerName, PlayerSource, SeasonInfo } from '@kinoox/api-client'
-import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types.js'
+import type { BalancerPlayerOptions, BalancerTitleInfo, IBalancerService } from '../players.types'
 import type {
   VibixGenre,
   VibixListResponse,
   VibixSerialResource,
   VibixVideoResource,
-} from './vibix.types.js'
+} from './vibix.types'
 
 /** Параметры вставки плеера Vibix в разметку страницы */
 export interface VibixEmbedOptions {

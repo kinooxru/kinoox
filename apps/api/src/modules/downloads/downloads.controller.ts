@@ -2,9 +2,9 @@
  * HTTP-обработчики модуля дистрибуции приложений.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { ok } from '../../utils.js'
-import { changelogQuerySchema, platformParamSchema } from './downloads.schema.js'
-import type { DownloadsService } from './downloads.service.js'
+import { ok } from '../../utils'
+import { changelogQuerySchema, platformParamSchema } from './downloads.schema'
+import type { DownloadsService } from './downloads.service'
 
 export interface DownloadsControllerDeps {
   downloadsService: DownloadsService

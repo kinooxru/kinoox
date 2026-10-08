@@ -9,12 +9,12 @@
  * - Записи о доступных источниках (Source) для каждого балансера
  */
 import { type PrismaClient, TitleStatus, TitleType } from '@prisma/client'
-import type { CacheService } from '../../core/plugins/cache.plugin.js'
-import { cacheKeys } from '../../core/plugins/cache.plugin.js'
-import { config } from '../../config.js'
-import type { BalancerTitleInfo } from '../players/players.types.js'
-import { VeoveoService } from '../players/veoveo/veoveo.service.js'
-import { VibixService } from '../players/vibix/vibix.service.js'
+import type { CacheService } from '../../core/plugins/cache.plugin'
+import { cacheKeys } from '../../core/plugins/cache.plugin'
+import { config } from '../../config'
+import type { BalancerTitleInfo } from '../players/players.types'
+import { VeoveoService } from '../players/veoveo/veoveo.service'
+import { VibixService } from '../players/vibix/vibix.service'
 
 export interface SyncResult {
   titleId: number

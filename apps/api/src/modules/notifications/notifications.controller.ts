@@ -3,9 +3,9 @@
  * Логика живёт в NotificationsService, здесь — только тонкие обёртки.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { requireUser } from '../../core/middleware/auth.middleware.js'
-import { ok } from '../../utils.js'
-import type { NotificationsService } from './notifications.service.js'
+import { requireUser } from '../../core/middleware/auth.middleware'
+import { ok } from '../../utils'
+import type { NotificationsService } from './notifications.service'
 
 export interface NotificationsControllerDeps {
   notificationsService: NotificationsService

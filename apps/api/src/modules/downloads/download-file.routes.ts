@@ -1,8 +1,8 @@
 import path from 'node:path'
 import fs from 'node:fs'
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { notFound } from '../../core/types.js'
-import type { DownloadsService } from './downloads.service.js'
+import { notFound } from '../../core/types'
+import type { DownloadsService } from './downloads.service'
 
 export interface DownloadStaticRoutesOptions {
   deps: {
@@ -63,7 +63,7 @@ export default async function downloadStaticRoutes(
     const contentType = MIME_TYPES[ext] ?? 'application/octet-stream'
 
     // Регистрируем скачивание в базе данных (увеличивает счётчик реальных загрузок)
-    await downloadsService.registerDownload(safePlatform as any).catch(() => undefined)
+    await downloadsService.registerDownload(safePlatform).catch(() => undefined)
 
     reply
       .header('Content-Type', contentType)

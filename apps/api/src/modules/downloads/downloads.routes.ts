@@ -6,7 +6,7 @@ import {
   makeGetVersions,
   makeRegisterDownload,
   type DownloadsControllerDeps,
-} from './downloads.controller.js'
+} from './downloads.controller'
 
 export interface DownloadsRoutesOptions {
   deps: DownloadsControllerDeps

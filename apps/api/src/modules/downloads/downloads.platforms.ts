@@ -4,7 +4,7 @@
  * Тексты совпадают с заданием: описания, особенности, форматы файлов
  * и системные требования каждой платформы.
  */
-import type { PlatformDescriptor } from './downloads.types.js'
+import type { PlatformDescriptor } from './downloads.types'
 
 export const PLATFORMS: PlatformDescriptor[] = [
   {

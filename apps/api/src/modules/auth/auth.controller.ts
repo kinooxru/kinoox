@@ -2,10 +2,10 @@
  * HTTP-обработчики авторизации.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { requireUser } from '../../core/middleware/auth.middleware.js'
-import { ok } from '../../utils.js'
-import { loginSchema, refreshSchema, registerSchema } from './auth.schema.js'
-import type { AuthService } from './auth.service.js'
+import { requireUser } from '../../core/middleware/auth.middleware'
+import { ok } from '../../utils'
+import { loginSchema, refreshSchema, registerSchema } from './auth.schema'
+import type { AuthService } from './auth.service'
 
 export interface AuthControllerDeps {
   authService: AuthService

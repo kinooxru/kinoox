@@ -6,12 +6,12 @@
  * пользователь переключает их анимированными табами в плеере.
  */
 import type { BalancerName, PlayerSource, SeasonInfo } from '@kinoox/api-client'
-import { config } from '../../config.js'
-import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin.js'
-import { MockBalancerService } from './mock/mock.service.js'
-import { VibixService } from './vibix/vibix.service.js'
-import { VeoveoService } from './veoveo/veoveo.service.js'
-import type { BalancerPlayerOptions, IBalancerService } from './players.types.js'
+import { config } from '../../config'
+import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
+import { MockBalancerService } from './mock/mock.service'
+import { VibixService } from './vibix/vibix.service'
+import { VeoveoService } from './veoveo/veoveo.service'
+import type { BalancerPlayerOptions, IBalancerService } from './players.types'
 
 export interface TitleSources {
   sources: PlayerSource[]

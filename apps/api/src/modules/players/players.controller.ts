@@ -1,9 +1,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { notFound } from '../../core/types.js'
-import { ok } from '../../utils.js'
-import { balancerParamSchema, playerQuerySchema } from './players.schema.js'
-import type { PlayersOrchestrator } from './players.service.js'
+import { notFound } from '../../core/types'
+import { ok } from '../../utils'
+import { balancerParamSchema, playerQuerySchema } from './players.schema'
+import type { PlayersOrchestrator } from './players.service'
 
 const idParamSchema = z.object({ id: z.coerce.number().int().positive() })
 

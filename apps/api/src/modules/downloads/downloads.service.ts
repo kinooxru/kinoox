@@ -13,10 +13,10 @@ import type {
   DownloadPlatformDTO,
   DownloadsListDTO,
 } from '@kinoox/api-client'
-import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin.js'
-import { notFound } from '../../core/types.js'
-import { config } from '../../config.js'
-import { DOWNLOADS_BASE_PATH, PLATFORMS, PLATFORM_MAP } from './downloads.platforms.js'
+import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
+import { notFound } from '../../core/types'
+import { config } from '../../config'
+import { DOWNLOADS_BASE_PATH, PLATFORMS, PLATFORM_MAP } from './downloads.platforms'
 
 /** Расширение файла для формата сборки */
 const FORMAT_EXTENSIONS: Record<string, string> = {

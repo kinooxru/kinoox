@@ -30,7 +30,7 @@ COPY apps/api apps/api
 
 WORKDIR /repo/apps/api
 
-# Prisma-клиент генерируется на этапе сборки (с бинарниками)
+# Prisma-клиент генерируется на этапе сборки
 RUN pnpm exec prisma generate
 
 # Сборка TypeScript в dist

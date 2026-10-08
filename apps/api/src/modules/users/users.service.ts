@@ -8,8 +8,8 @@ import type {
   UserDTO,
   ViewHistoryDTO,
 } from '@kinoox/api-client'
-import { conflict, notFound } from '../../core/types.js'
-import { paginated, toNumber } from '../../utils.js'
+import { conflict, notFound } from '../../core/types'
+import { paginated, toNumber } from '../../utils'
 
 export class UsersService {
   constructor(private readonly prisma: PrismaClient) {}

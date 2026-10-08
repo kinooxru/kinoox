@@ -1,8 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { notFound } from '../../core/types.js'
-import { ok } from '../../utils.js'
-import type { CatalogSyncService } from './catalog.sync.service.js'
+import { notFound } from '../../core/types'
+import { ok } from '../../utils'
+import type { CatalogSyncService } from './catalog.sync.service'
 
 const idParamSchema = z.object({ id: z.coerce.number().int().positive() })
 

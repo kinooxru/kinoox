@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { VeoveoService } from './veoveo.service.js'
+import { VeoveoService } from './veoveo.service'
 
 const originalFetch = globalThis.fetch
 

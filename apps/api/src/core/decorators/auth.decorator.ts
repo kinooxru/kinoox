@@ -9,4 +9,4 @@ export {
   optionalAuth,
   adminGuard,
   registerAuthDecorators,
-} from '../middleware/auth.middleware.js'
+} from '../middleware/auth.middleware'
