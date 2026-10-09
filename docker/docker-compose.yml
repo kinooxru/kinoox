@@ -227,6 +227,9 @@ services:
         condition: service_healthy
     networks:
       - kinoox_backend
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - ../.env
     environment:
