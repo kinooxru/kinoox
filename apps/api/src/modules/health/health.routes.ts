@@ -6,7 +6,7 @@
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import type { HealthDTO } from '@kinoox/api-client'
-import { config } from '../../config'
+import { config } from '../../config.js'
 import { ok } from '../../utils'
 
 const startedAt = Date.now()

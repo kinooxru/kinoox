@@ -6,7 +6,7 @@
  * пользователь переключает их анимированными табами в плеере.
  */
 import type { BalancerName, PlayerSource, SeasonInfo } from '@kinoox/api-client'
-import { config } from '../../config'
+import { config } from '../../config.js'
 import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
 import { MockBalancerService } from './mock/mock.service'
 import { VibixService } from './vibix/vibix.service'

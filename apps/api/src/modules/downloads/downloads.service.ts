@@ -15,7 +15,7 @@ import type {
 } from '@kinoox/api-client'
 import { cacheKeys, type CacheService } from '../../core/plugins/cache.plugin'
 import { notFound } from '../../core/types'
-import { config } from '../../config'
+import { config } from '../../config.js'
 import { DOWNLOADS_BASE_PATH, PLATFORMS, PLATFORM_MAP } from './downloads.platforms'
 
 /** Расширение файла для формата сборки */

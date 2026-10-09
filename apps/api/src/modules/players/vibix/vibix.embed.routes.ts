@@ -13,7 +13,7 @@
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
-import { config } from '../../../config'
+import { config } from '../../../config.js'
 
 /** Скрипт SDK партнёра, который подменяет <ins> на плеер */
 const RENDEX_SDK = 'https://graphicslab.io/sdk/v2/rendex-sdk.min.js'
