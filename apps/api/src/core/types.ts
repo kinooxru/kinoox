@@ -2,7 +2,7 @@
  * Общие типы API.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import type { JwtPayload } from '../core/plugins/jwt.plugin'
+import type { JwtPayload } from '../core/plugins/jwt.plugin.js'
 
 export interface ApiEnvelope<T> {
   success: boolean

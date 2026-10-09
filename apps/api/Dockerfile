@@ -36,9 +36,6 @@ RUN pnpm exec prisma generate
 # Сборка TypeScript в dist
 RUN pnpm exec tsc -p tsconfig.build.json
 
-# Добавить .js расширения к импортам ESM
-RUN npx tsc-alias -p tsconfig.build.json
-
 # Оставляем только продуктовые зависимости
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile=false --filter @kinoox/api... --prod

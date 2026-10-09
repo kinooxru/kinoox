@@ -2,7 +2,7 @@
  * Проверка административных прав для отдельных обработчиков.
  */
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { adminGuard, authGuard } from './auth.middleware'
+import { adminGuard, authGuard } from './auth.middleware.js'
 
 /** Требует авторизации и роли admin */
 export async function adminMiddleware(

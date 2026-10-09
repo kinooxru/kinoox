@@ -3,11 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "Node",
     "lib": ["ES2022"],
     "types": ["node"],
     "noEmit": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   // seed.ts входит в проект, чтобы редактор видел типы Node.js (process, console).
   // При сборке он исключается отдельным tsconfig.build.json — там rootDir: src.
