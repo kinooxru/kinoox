@@ -11,7 +11,7 @@
 import Redis from 'ioredis'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import { config } from '../../config'
+import { config } from '../../config.js'
 
 export interface CacheService {
   get<T>(key: string): Promise<T | null>

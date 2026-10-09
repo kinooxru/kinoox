@@ -5,7 +5,7 @@
  * обрабатывает сигналы завершения для корректного graceful shutdown.
  */
 import { buildServer } from './app.js'
-import { config } from './config'
+import { config } from './config.js'
 import { createSocketServer } from './realtime/socket.js'
 
 async function main(): Promise<void> {

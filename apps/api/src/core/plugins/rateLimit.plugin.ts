@@ -4,7 +4,7 @@
 import rateLimit from '@fastify/rate-limit'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import { config } from '../../config'
+import { config } from '../../config.js'
 
 export default fp(
   async function rateLimitPlugin(fastify: FastifyInstance) {
