@@ -931,11 +931,6 @@ networks:
       config:
         - subnet: 172.20.1.0/24
           gateway: 172.20.1.1
-    options:
-      com.docker.network.bridge.name: br-kinoox-fe
-      com.docker.network.bridge.enable_icc: "true"
-      com.docker.network.bridge.enable_ip_masquerade: "true"
-      com.docker.network.driver.mtu: 1500
 
   # Backend — PostgreSQL, Redis, API, MinIO (изолировано от интернета)
   kinoox_backend:
@@ -947,10 +942,6 @@ networks:
       config:
         - subnet: 172.20.2.0/24
           gateway: 172.20.2.1
-    options:
-      com.docker.network.bridge.name: br-kinoox-be
-      com.docker.network.bridge.enable_icc: "true"
-      com.docker.network.driver.mtu: 1500
 
   # Monitoring — Prometheus, Grafana, экспортёры, Loki (изолировано)
   kinoox_monitoring:
@@ -962,7 +953,3 @@ networks:
       config:
         - subnet: 172.20.3.0/24
           gateway: 172.20.3.1
-    options:
-      com.docker.network.bridge.name: br-kinoox-mon
-      com.docker.network.bridge.enable_icc: "true"
-      com.docker.network.driver.mtu: 1500
