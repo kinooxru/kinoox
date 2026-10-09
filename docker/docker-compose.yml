@@ -577,7 +577,7 @@ services:
   # ───────────────────────────────────────────────────────────
   minio-init:
     <<: *security-hardening
-    image: minio/mc:latest
+    image: minio/minio:latest
     container_name: kinoox-minio-init
     restart: "no"
     depends_on:
@@ -586,14 +586,14 @@ services:
     entrypoint: >
       sh -c "
         echo '=== MinIO Init ===';
-        until mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
+        until /usr/bin/mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
           echo 'Ждём MinIO...';
           sleep 2;
         done;
-        mc mb kinoox/downloads --ignore-existing;
-        mc mb kinoox/screenshots --ignore-existing;
-        mc mb kinoox/backups --ignore-existing;
-        mc anonymous set download kinoox/downloads;
+        /usr/bin/mc mb kinoox/downloads --ignore-existing;
+        /usr/bin/mc mb kinoox/screenshots --ignore-existing;
+        /usr/bin/mc mb kinoox/backups --ignore-existing;
+        /usr/bin/mc anonymous set download kinoox/downloads;
         echo 'Buckets созданы.';
       "
     networks:
