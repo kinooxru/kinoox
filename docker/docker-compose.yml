@@ -526,85 +526,6 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"
 
   # ───────────────────────────────────────────────────────────
-  #  MinIO — S3-совместимое хранилище файлов сборок
-  # ───────────────────────────────────────────────────────────
-  minio:
-    <<: [*restart-policy, *default-logging, *security-hardening]
-    image: minio/minio:latest
-    container_name: kinoox-minio
-    stop_grace_period: 15s
-    cap_add:
-      - CHOWN
-      - SETUID
-      - SETGID
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 256M
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-kinooxadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Задайте MINIO_ROOT_PASSWORD в .env}
-      MINIO_DOMAIN: minio.kinoox.ru
-      TZ: Europe/Moscow
-    ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
-    volumes:
-      - minio_data:/data
-    networks:
-      kinoox_frontend:
-        aliases:
-          - minio
-      kinoox_backend:
-        aliases:
-          - minio
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-      - "kinoox.service=storage"
-      - "kinoox.tier=important"
-
-  # ───────────────────────────────────────────────────────────
-  #  MinIO Init — создание buckets при первом запуске
-  # ───────────────────────────────────────────────────────────
-  minio-init:
-    <<: *security-hardening
-    image: minio/minio:latest
-    container_name: kinoox-minio-init
-    restart: "no"
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      sh -c "
-        echo '=== MinIO Init ===';
-        until /usr/bin/mc alias set kinoox http://minio:9000 ${MINIO_ROOT_USER:-kinooxadmin} ${MINIO_ROOT_PASSWORD}; do
-          echo 'Ждём MinIO...';
-          sleep 2;
-        done;
-        /usr/bin/mc mb kinoox/downloads --ignore-existing;
-        /usr/bin/mc mb kinoox/screenshots --ignore-existing;
-        /usr/bin/mc mb kinoox/backups --ignore-existing;
-        /usr/bin/mc anonymous set download kinoox/downloads;
-        echo 'Buckets созданы.';
-      "
-    networks:
-      - kinoox_backend
-    logging:
-      driver: json-file
-      options:
-        max-size: "5m"
-        max-file: "1"
-
-  # ───────────────────────────────────────────────────────────
   #  Adminer — веб-интерфейс управления БД
   # ───────────────────────────────────────────────────────────
   adminer:
@@ -902,8 +823,6 @@ volumes:
   nginx_run:
     driver: local
   nginx_tmp:
-    driver: local
-  minio_data:
     driver: local
   prometheus_data:
     driver: local
