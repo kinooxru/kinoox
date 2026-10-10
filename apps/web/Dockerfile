@@ -54,7 +54,11 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl tini ca-certificates \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        tini \
+        ca-certificates \
+        libvips42 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -65,6 +69,9 @@ COPY --from=build /repo/apps/web/public ./public
 
 # Статика Next.js (CSS, JS chunks, шрифты)
 COPY --from=build /repo/apps/web/.next/static ./static
+
+# Sharp — native-модуль, копируем явно из stage build
+COPY --from=build /repo/apps/web/node_modules/sharp ./node_modules/sharp
 
 RUN groupadd --system --gid 1001 kinoox \
     && useradd --system --uid 1001 --gid kinoox --create-home kinoox \
