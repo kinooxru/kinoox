@@ -378,6 +378,7 @@ services:
       - SETUID
       - SETGID
       - DAC_OVERRIDE
+    entrypoint: ["/bin/sh", "/scripts/start.sh"]
     ports:
       - target: 80
         published: 80
@@ -390,6 +391,7 @@ services:
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ../nginx/conf.d:/etc/nginx/conf.d:ro
+      - ../nginx/start.sh:/scripts/start.sh:ro
       - ../deploy/ssl:/etc/nginx/ssl:ro
       - ../deploy/ssl-www:/var/www/letsencrypt:rw
       - ../storage/downloads:/usr/share/nginx/downloads:ro
@@ -518,16 +520,15 @@ services:
     command: >
       -c "
         mkdir -p /backups/wal_archive && 
-        chmod +x /scripts/backup.sh && 
         while true; do 
-          /scripts/backup.sh >> /var/log/backup.log 2>&1; 
+          sh /scripts/backup.sh >> /var/log/backup.log 2>&1; 
           sleep 86400; 
         done
       "
     volumes:
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
-      - ../docker/postgres/backup.sh:/scripts/backup.sh:ro
+      - ../docker/postgres/backup.sh:/scripts/backup.sh
     depends_on:
       postgres:
         condition: service_healthy
