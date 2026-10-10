@@ -7,12 +7,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  // Standalone-сборка для Docker включается переменной окружения:
-  // на Windows создание симлинков требует прав администратора,
-  // поэтому локально режим выключен, а в Dockerfile включён.
-  ...(process.env.BUILD_STANDALONE === 'true'
-    ? { output: 'standalone', outputFileTracingRoot: path.join(__dirname, '../../') }
-    : {}),
+  // Standalone-сборка для Docker
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../../'),
 
   // Пакеты монорепо компилируются из исходников
   transpilePackages: ['@kinoox/design-system', '@kinoox/api-client'],
