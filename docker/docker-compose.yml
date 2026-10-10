@@ -415,6 +415,9 @@ services:
         aliases:
           - nginx
           - proxy
+      kinoox_backend:
+        aliases:
+          - nginx
       kinoox_monitoring:
         aliases:
           - nginx

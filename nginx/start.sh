@@ -6,8 +6,8 @@ MAX_WAIT=30
 WAITED=0
 
 while [ $WAITED -lt $MAX_WAIT ]; do
-  if wget -q --spider http://web:3000/health 2>/dev/null && wget -q --spider http://api:3001/api/health 2>/dev/null; then
-    echo "web and api are reachable"
+  if wget -q --spider http://api:3001/api/health 2>/dev/null; then
+    echo "api is reachable"
     break
   fi
   echo "Waiting... ($WAITED/$MAX_WAIT)"
@@ -16,7 +16,7 @@ while [ $WAITED -lt $MAX_WAIT ]; do
 done
 
 if [ $WAITED -ge $MAX_WAIT ]; then
-  echo "ERROR: web or api not reachable after ${MAX_WAIT}s"
+  echo "ERROR: api not reachable after ${MAX_WAIT}s"
   exit 1
 fi
 
