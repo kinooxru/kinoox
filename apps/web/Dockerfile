@@ -43,7 +43,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
-RUN pnpm build
+RUN BUILD_STANDALONE=true pnpm exec next build
 
 # ── Этап 3: рантайм ──────────────────────────────────────────
 FROM node:20-bookworm-slim AS runtime
