@@ -514,16 +514,18 @@ services:
       PGDATABASE: ${DB_NAME:-kinoox_db}
       TZ: Europe/Moscow
       RETENTION_DAYS: "30"
-    entrypoint: >
-      sh -c "
-        echo '=== KINOOX PostgreSQL Backup ===';
-        mkdir -p /backups/wal_archive;
-        echo '0 2 * * * pg_dump -Fc -f /backups/kinoox_$$(date +\%Y\%m\%d_\%H\%M).dump && find /backups -name \"*.dump\" -mtime +'$${RETENTION_DAYS:-30}' -delete' > /etc/crontabs/root;
-        crond -f -l 8
+    entrypoint: ["/bin/sh"]
+    command: >
+      -c "
+        apt-get update && apt-get install -y cron && 
+        chmod +x /scripts/backup.sh && 
+        echo '0 2 * * * /scripts/backup.sh >> /var/log/backup.log 2>&1' > /etc/crontabs/root && 
+        crond -f
       "
     volumes:
       - ../storage/backups:/backups
       - ../storage/backups/wal_archive:/backups/wal_archive
+      - ../docker/postgres/backup.sh:/scripts/backup.sh:ro
     depends_on:
       postgres:
         condition: service_healthy
