@@ -11,7 +11,7 @@
 import { type PrismaClient, TitleStatus, TitleType } from '@prisma/client'
 import type { CacheService } from '../../core/plugins/cache.plugin'
 import { cacheKeys } from '../../core/plugins/cache.plugin'
-import { config } from '../../config.js'
+import { config } from '../../config'
 import type { BalancerTitleInfo } from '../players/players.types'
 import { VeoveoService } from '../players/veoveo/veoveo.service'
 import { VibixService } from '../players/vibix/vibix.service'

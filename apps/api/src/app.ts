@@ -8,7 +8,7 @@
  *   4. healthcheck под /api.
  */
 import Fastify, { type FastifyInstance } from 'fastify'
-import { config } from './config.js'
+import { config } from './config'
 import { loggerOptions } from './core/logger.js'
 import cachePlugin from './core/plugins/cache.plugin.js'
 import corsPlugin from './core/plugins/cors.plugin.js'

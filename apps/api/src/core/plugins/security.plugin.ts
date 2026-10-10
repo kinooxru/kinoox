@@ -4,7 +4,7 @@
 import helmet from '@fastify/helmet'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import { config } from '../../config.js'
+import { config } from '../../config'
 
 export default fp(
   async function securityPlugin(fastify: FastifyInstance) {

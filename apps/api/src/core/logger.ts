@@ -2,7 +2,7 @@
  * Форматирование логов в консоль для разработки.
  */
 import { pino } from 'pino'
-import { config } from '../config.js'
+import { config } from '../config'
 
 export const loggerOptions = config.isDevelopment
   ? {
