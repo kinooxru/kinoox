@@ -517,10 +517,12 @@ services:
     entrypoint: ["/bin/sh"]
     command: >
       -c "
-        apt-get update && apt-get install -y cron && 
+        mkdir -p /backups/wal_archive && 
         chmod +x /scripts/backup.sh && 
-        echo '0 2 * * * /scripts/backup.sh >> /var/log/backup.log 2>&1' > /etc/crontabs/root && 
-        crond -f
+        while true; do 
+          /scripts/backup.sh >> /var/log/backup.log 2>&1; 
+          sleep 86400; 
+        done
       "
     volumes:
       - ../storage/backups:/backups

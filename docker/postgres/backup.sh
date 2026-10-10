@@ -4,6 +4,9 @@ set -e
 echo "=== KINOOX PostgreSQL Backup ==="
 echo "Start: $(date)"
 
+# Ждём 2 часа для первого запуска (backup в 2:00 по UTC = 0:00 MSK)
+sleep 7200
+
 BACKUP_DIR="/backups"
 TIMESTAMP=$(date +%Y%m%d_%H%M)
 BACKUP_FILE="${BACKUP_DIR}/kinoox_${TIMESTAMP}.dump"
