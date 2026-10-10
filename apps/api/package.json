@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "KINOOX API — Fastify + Prisma + Redis",
-  "type": "module",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js --max-old-space-size=4096",
     "typecheck": "tsc --noEmit",
     "lint": "echo \"no lint yet\"",
@@ -47,7 +46,6 @@
     "@types/node": "^22.10.2",
     "prisma": "^6.1.0",
     "rimraf": "^6.0.1",
-    "tsc-alias": "^1.8.8",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
