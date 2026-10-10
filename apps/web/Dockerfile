@@ -61,8 +61,10 @@ WORKDIR /app
 
 # Next.js standalone-сборка содержит только необходимые файлы
 COPY --from=build /repo/apps/web/.next/standalone ./
-COPY --from=build /repo/apps/web/.next/static ./static
 COPY --from=build /repo/apps/web/public ./public
+
+# Статика Next.js (CSS, JS chunks, шрифты)
+COPY --from=build /repo/apps/web/.next/static ./static
 
 RUN groupadd --system --gid 1001 kinoox \
     && useradd --system --uid 1001 --gid kinoox --create-home kinoox \

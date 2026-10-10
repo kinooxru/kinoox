@@ -114,6 +114,15 @@ wait_for nginx 20 || warn "Nginx не прошёл healthcheck"
 log "Применяем миграции и seed"
 ${DC} run --rm migrate || warn "Миграции завершились с ошибкой — проверьте логи"
 
+# ── Копирование статики Next.js ─────────────────────────────
+log "Копируем статику Next.js в storage/static"
+mkdir -p "${APP_DIR}/storage/static"
+if ${DC} ps web --status running --quiet 2>/dev/null | grep -q .; then
+  ${DC} cp web:/app/static "${APP_DIR}/storage/static/" 2>/dev/null && ok "Статика скопирована" || warn "Статика не скопирована — nginx отдаст 404"
+else
+  warn "Web-контейнер не запущен — пропускаем копирование статики"
+fi
+
 # ── SSL-сертификат ───────────────────────────────────────────
 if [[ ! -f "${APP_DIR}/deploy/ssl/live/${DOMAIN}/fullchain.pem" ]]; then
   log "Выпускаем SSL-сертификат Let's Encrypt"

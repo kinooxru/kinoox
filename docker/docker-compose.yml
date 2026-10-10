@@ -396,6 +396,7 @@ services:
       - ../deploy/ssl:/etc/nginx/ssl:ro
       - ../deploy/ssl-www:/var/www/letsencrypt:rw
       - ../storage/downloads:/usr/share/nginx/downloads:ro
+      - ../storage/static:/opt/kinoox/storage/static:ro
       - nginx_cache:/var/cache/nginx
       - nginx_logs:/var/log/nginx
       - nginx_run:/var/run
