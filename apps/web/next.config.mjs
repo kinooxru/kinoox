@@ -9,7 +9,6 @@ const nextConfig = {
   compress: true,
   // Standalone-сборка для Docker
   output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '../../'),
 
   // Пакеты монорепо компилируются из исходников
   transpilePackages: ['@kinoox/design-system', '@kinoox/api-client'],
