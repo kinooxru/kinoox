@@ -31,16 +31,17 @@ COPY apps/web apps/web
 WORKDIR /repo/apps/web
 
 # Переменные, вшиваемые на этапе сборки Next.js
+ARG BUILD_STANDALONE=true
 ARG NEXT_PUBLIC_API_URL=https://kinoox.ru/api/v1
 ARG NEXT_PUBLIC_SOCKET_URL=https://kinoox.ru
 ARG NEXT_PUBLIC_SITE_URL=https://kinoox.ru
+ENV BUILD_STANDALONE=${BUILD_STANDALONE}
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=4096
-# Standalone-сборка нужна только для Docker-образа
-ENV BUILD_STANDALONE=true
 
 RUN pnpm build
 
