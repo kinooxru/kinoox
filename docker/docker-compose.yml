@@ -416,6 +416,9 @@ services:
       kinoox_monitoring:
         aliases:
           - nginx
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ulimits:
       nofile:
         soft: 65536
