@@ -340,6 +340,7 @@ services:
       - ../.env
     environment:
       NODE_ENV: production
+      NODE_TLS_REJECT_UNAUTHORIZED: "0"
       TZ: Europe/Moscow
       NEXT_PUBLIC_API_URL: https://kinoox.ru/api/v1
       NEXT_PUBLIC_SOCKET_URL: https://kinoox.ru
