@@ -4,10 +4,9 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url))
+const currentDir = __dirname
 
 // Подгружаем .env файл при запуске (включая запуск tsx watch / node)
 for (const envPath of [
