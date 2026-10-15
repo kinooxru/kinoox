@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+/vendor/
+
+# Environment
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+
+# Production
+public/hot
+public/storage/*.json
+
+# Storage
+storage/*.key
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build
+public/hot
+public/mix-manifest.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+laravel.log

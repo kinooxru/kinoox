@@ -1,0 +1,137 @@
+name: Deploy Web
+
+# Деплой сайта Next.js на продакшн-сервер.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/design-system/**'
+      - 'packages/api-client/**'
+      - 'docker/docker-compose.yml'
+      - 'apps/web/Dockerfile'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+
+  verify:
+    name: Проверки перед деплоем
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Проверка типов дизайн-системы
+        run: pnpm --filter @kinoox/design-system typecheck
+
+      - name: Проверка типов API-клиента
+        run: pnpm --filter @kinoox/api-client typecheck
+
+      - name: Проверка типов сайта
+        run: pnpm --filter @kinoox/web typecheck
+
+      - name: Линт сайта
+        run: pnpm --filter @kinoox/web lint
+        continue-on-error: true
+
+      - name: Сборка сайта
+        working-directory: apps/web
+        run: pnpm build
+        env:
+          BUILD_STANDALONE: 'true'
+          NEXT_PUBLIC_API_URL: https://kinoox.ru/api/v1
+          NEXT_PUBLIC_SOCKET_URL: https://kinoox.ru
+          NEXT_PUBLIC_SITE_URL: https://kinoox.ru
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  deploy:
+    name: Деплой на сервер
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Обновление сайта на сервере
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 40m
+          script: |
+            set -e
+            cd /opt/kinoox
+
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            # Пересборка и перезапуск только сайта
+            docker compose -f docker/docker-compose.yml build web
+            docker compose -f docker/docker-compose.yml up -d --no-deps web
+
+            # Nginx перечитывает конфигурацию после обновления upstream
+            sleep 10
+            docker compose -f docker/docker-compose.yml exec -T nginx nginx -s reload || true
+
+            docker image prune -f
+
+            echo "Деплой сайта завершён: $(git rev-parse --short HEAD)"
+
+  smoke-test:
+    name: Проверка после деплоя
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Главная страница
+        run: |
+          for i in $(seq 1 10); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://kinoox.ru/ || echo 000)
+            if [ "$STATUS" = "200" ]; then
+              echo "✓ Главная отвечает 200"
+              exit 0
+            fi
+            echo "Попытка $i: статус $STATUS"
+            sleep 10
+          done
+          echo "✗ Главная не отвечает"
+          exit 1
+
+      - name: Ключевые страницы
+        run: |
+          for path in /movies /series /anime /cartoons /download /search; do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "https://kinoox.ru${path}")
+            echo "GET ${path} → ${STATUS}"
+            test "$STATUS" = "200" || exit 1
+          done
+          echo "✓ Все страницы отвечают 200"
+
+      - name: Редирект www → без www
+        run: |
+          LOCATION=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://www.kinoox.ru/)
+          echo "www.kinoox.ru → ${LOCATION}"
+          echo "${LOCATION}" | grep -q '301 https://kinoox.ru/'
+
+      - name: SSL-сертификат
+        run: |
+          EXPIRY=$(echo | openssl s_client -servername kinoox.ru -connect kinoox.ru:443 2>/dev/null \
+            | openssl x509 -noout -enddate | cut -d= -f2)
+          echo "Сертификат действителен до: ${EXPIRY}"

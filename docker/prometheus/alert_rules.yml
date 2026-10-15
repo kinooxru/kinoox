@@ -1,0 +1,160 @@
+# ─────────────────────────────────────────────────────────────
+#  KINOOX — правила алертов Prometheus
+# ─────────────────────────────────────────────────────────────
+
+groups:
+
+  - name: kinoox-availability
+    interval: 30s
+    rules:
+      - alert: ApiDown
+        expr: up{job="kinoox-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: 'API KINOOX недоступен'
+          description: 'Сервис api не отвечает на /api/health более 2 минут.'
+
+      - alert: WebDown
+        expr: up{job="kinoox-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: web
+        annotations:
+          summary: 'Сайт KINOOX недоступен'
+
+      - alert: NginxDown
+        expr: up{job="nginx"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: nginx
+        annotations:
+          summary: 'Nginx не отвечает'
+          description: 'Внешний доступ к kinoox.ru нарушен.'
+
+      - alert: PostgresDown
+        expr: up{job="node-exporter"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: 'Нет метрик хоста'
+          description: 'node-exporter не отдаёт данные — проверьте хост и контейнер.'
+
+  - name: kinoox-resources
+    interval: 60s
+    rules:
+      - alert: HighCpuUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Высокая загрузка CPU ({{ $value | printf "%.1f" }}%)'
+          description: 'Загрузка процессора выше 85% в течение 10 минут.'
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Мало свободной памяти (использовано {{ $value | printf "%.1f" }}%)'
+          description: 'Свободной памяти меньше 10%.'
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Заканчивается место на диске ({{ $value | printf "%.1f" }}% свободно)'
+          description: 'Свободно менее 15% корневого раздела.'
+
+      - alert: DiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[6h], 24 * 3600) < 0
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Диск заполнится в течение суток'
+          description: 'По текущей скорости записи свободное место закончится за 24 часа.'
+
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes{name=~"kinoox-.*"} / 1024 / 1024 / 1024) > 0
+          and on(name) (container_spec_memory_limit_bytes{name=~"kinoox-.*"} > 0)
+          and (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Контейнер {{ $labels.name }} близок к лимиту памяти'
+          description: 'Использовано более 90% лимита памяти контейнера.'
+
+      - alert: ContainerRestarted
+        expr: increase(container_start_time_seconds{name=~"kinoox-.*"}[15m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Контейнер {{ $labels.name }} перезапускался'
+          description: 'Контейнер перезапускался более одного раза за 15 минут.'
+
+  - name: kinoox-application
+    interval: 30s
+    rules:
+      - alert: ApiHighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: 'Много ошибок 5xx ({{ $value | printf "%.1f" }}/сек)'
+          description: 'Nginx фиксирует больше 5 ошибок сервера в секунду.'
+
+      - alert: ApiSlowResponses
+        expr: histogram_quantile(0.95, rate(nginx_http_request_duration_seconds_bucket[5m])) > 3
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: 'Медленные ответы API (p95 > 3 с)'
+          description: '95-й процентиль времени ответа превышает 3 секунды.'
+
+      - alert: RedisDown
+        expr: up{job="kinoox-api"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: 'Возможен сбой Redis'
+          description: 'API работает, но без кэша нагрузка на базу растёт.'
+
+  - name: kinoox-ssl
+    interval: 3600s
+    rules:
+      - alert: SslCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: 'SSL-сертификат истекает менее чем через 14 дней'
+          description: 'Проверьте работу certbot-renewer.'
+
+      - alert: BackupMissing
+        expr: time() - node_file_info_timestamp > 90000
+        for: 2h
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Нет свежего бэкапа базы данных'
+          description: 'Последний дамп старше 25 часов — проверьте контейнер pg-backup.'

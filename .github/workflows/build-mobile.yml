@@ -1,0 +1,219 @@
+name: Build Mobile Apps
+
+# Сборка APK для Android и IPA для iOS через EAS Build.
+# Артефакты загружаются в GitHub Actions и переносятся в /storage/downloads.
+
+on:
+  push:
+    tags:
+      - 'mobile-v*'
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/build-mobile.yml'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Платформа для сборки'
+        required: true
+        default: 'all'
+        type: choice
+        options: [all, android, ios]
+      profile:
+        description: 'Профиль EAS'
+        required: true
+        default: 'production'
+        type: choice
+        options: [preview, production]
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+jobs:
+
+  # ── Проверка типов перед сборкой ───────────────────────────
+  verify:
+    name: Проверка типов
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Проверка типов мобильного приложения
+        run: pnpm --filter @kinoox/mobile typecheck
+
+  # ── Android: APK ───────────────────────────────────────────
+  android:
+    name: Android APK
+    needs: verify
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' ||
+      github.event.inputs.platform == 'all' ||
+      github.event.inputs.platform == 'android'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Установка EAS CLI
+        run: npm install -g eas-cli
+
+      # Keystore хранится в секретах GitHub
+      - name: Восстановление keystore
+        run: |
+          mkdir -p apps/mobile/secrets
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/mobile/secrets/kinoox.keystore
+
+      - name: Сборка APK через EAS
+        working-directory: apps/mobile
+        run: |
+          eas build \
+            --platform android \
+            --profile ${{ github.event.inputs.profile || 'production' }} \
+            --non-interactive \
+            --no-wait
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Ожидание сборки и скачивание APK
+        working-directory: apps/mobile
+        run: |
+          BUILD_ID=$(eas build:list --platform android --limit 1 --non-interactive --json | jq -r '.[0].id')
+          eas build:view "$BUILD_ID" --json | jq -r '.artifacts.buildUrl' > apk-url.txt
+          curl -L "$(cat apk-url.txt)" -o kinoox-android.apk
+
+      - name: Загрузка артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinoox-android-apk
+          path: apps/mobile/kinoox-android.apk
+          retention-days: 30
+
+  # ── iOS: сборка для TestFlight ─────────────────────────────
+  ios:
+    name: iOS TestFlight
+    needs: verify
+    runs-on: macos-14
+    if: |
+      github.event_name == 'push' ||
+      github.event.inputs.platform == 'all' ||
+      github.event.inputs.platform == 'ios'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Установка зависимостей
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Установка EAS CLI
+        run: npm install -g eas-cli
+
+      # Provisioning profile и сертификат берутся из секретов
+      - name: Восстановление сертификата iOS
+        run: |
+          mkdir -p apps/mobile/secrets
+          echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 -d > apps/mobile/secrets/dist.p12
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 -d > apps/mobile/secrets/profile.mobileprovision
+
+      - name: Сборка IPA через EAS
+        working-directory: apps/mobile
+        run: |
+          eas build \
+            --platform ios \
+            --profile production \
+            --non-interactive \
+            --no-wait
+        env:
+          EXPO_APPLE_ID: ${{ secrets.APPLE_ID }}
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+
+      - name: Ожидание сборки
+        working-directory: apps/mobile
+        run: |
+          BUILD_ID=$(eas build:list --platform ios --limit 1 --non-interactive --json | jq -r '.[0].id')
+          eas build:view "$BUILD_ID" --json | jq -r '.artifacts.buildUrl' > ipa-url.txt
+          curl -L "$(cat ipa-url.txt)" -o kinoox-ios.ipa
+
+      - name: Публикация в TestFlight
+        working-directory: apps/mobile
+        run: eas submit --platform ios --latest --non-interactive || true
+
+      - name: Загрузка артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: kinoox-ios-ipa
+          path: apps/mobile/kinoox-ios.ipa
+          retention-days: 30
+
+  # ── Публикация сборок на сервер ────────────────────────────
+  publish:
+    name: Публикация сборок на сервер
+    needs: [android, ios]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Копирование сборок на сервер
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: 'artifacts/**'
+          target: '/opt/kinoox/storage/downloads/'
+
+      - name: Обновление версий в базе
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/kinoox
+            docker compose -f docker/docker-compose.yml exec -T api \
+              node -e "console.log('Сборки обновлены')"

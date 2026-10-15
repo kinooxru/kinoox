@@ -1,0 +1,282 @@
+Swagger
+
+https://vibix.org/api/external/documentation
+
+Список GET методов
+
+GET /api/v1/publisher/videos/kp/{kpId} - Получить загруженное видео по Киопоиск ID
+
+Параметры:
+
+kpId: integer	Kinopoisk ID видео (обязательный)
+Пример: 484488
+
+Ответ:
+
+id: integer	ID видео
+Пример: 100
+name: string	Название видео на русском либо на английском
+name_rus: string	Название видео на русском (может быть null)
+name_eng: string	Название видео на английском (может быть null)
+name_original: string	Оригинальное название видео (может быть null)
+type: string	Тип видео: movie или serial
+year: integer	Год выпуска видео (может быть null)
+kp_id: integer	ID видео на Кинопоиске (может быть null)
+kinopoisk_id: integer	[Устарело] ID видео на Кинопоиске (может быть null)
+imdb_id: string	ID видео на IMDb (может быть null)
+kp_rating: float	Рейтинг на Кинопоиске (может быть null)
+imdb_rating: float	Рейтинг на IMDb (может быть null)
+iframe_url: string	URL фрейма видео
+poster_url: string	URL постера (может быть null)
+backdrop_url: string	URL широкоформатного постера (может быть null)
+duration: integer	Длительность видео в минутах (может быть null)
+quality: string	Качество видео
+genre: array of strings	Жанры видео (может быть null)
+country: array of strings	Страны производства видео (может быть null)
+description: string	Описание видео (может быть null)
+description_short: string	Краткое описание видео (может быть null)
+voiceovers: array	Список озвучек (может быть null)
+- id: integer	ID озвучки
+- name: string	Название озвучки
+tags: array	Список тегов (может быть null)
+- id: integer	ID тега
+- code: string	Код тега
+- name: string	Название тега
+uploaded_at: string	Дата и время добавления видео (может быть null)
+
+
+GET /api/v1/publisher/videos/imdb/{imdbId} - Получить видео по IMDB ID
+
+Параметры:
+
+imdbId: string	IMDB ID видео (обязательный)
+Пример: tt1527186
+
+Ответ:
+
+id: integer	ID видео
+name: string	Название видео на русском либо на английском
+name_rus: string	Название видео на русском (может быть null)
+name_eng: string	Название видео на английском (может быть null)
+name_original: string	Оригинальное название видео (может быть null)
+type: string	Тип видео: movie или serial
+year: integer	Год выпуска видео (может быть null)
+kp_id: integer	ID видео на Кинопоиске (может быть null)
+kinopoisk_id: integer	[Устарело] ID видео на Кинопоиске (может быть null)
+imdb_id: string	ID видео на IMDb (может быть null)
+kp_rating: float	Рейтинг на Кинопоиске (может быть null)
+imdb_rating: float	Рейтинг на IMDb (может быть null)
+iframe_url: string	URL фрейма видео
+poster_url: string	URL постера (может быть null)
+backdrop_url: string	URL широкоформатного постера (может быть null)
+duration: integer	Длительность видео в минутах (может быть null)
+quality: string	Качество видео
+genre: array of strings	Жанры видео (может быть null)
+country: array of strings	Страны производства видео (может быть null)
+description: string	Описание видео (может быть null)
+description_short: string	Краткое описание видео (может быть null)
+voiceovers: array	Список озвучек (может быть null)
+- id: integer	ID озвучки
+- name: string	Название озвучки
+tags: array	Список тегов (может быть null)
+- id: integer	ID тега
+- code: string	Код тега
+- name: string	Название тега
+uploaded_at: string	Дата и время добавления видео (может быть null)
+
+
+GET /api/v1/publisher/videos/links - Получить список загруженных видео
+
+Параметры:
+
+type: string	Тип видео: movie или serial
+category[]: array of integers	Категории видео
+year[]: array of integers	Годы выпуска
+genre[]: array of integers	Жанры видео
+country[]: array of integers	Страны производства видео
+tag[]: array of integers	Теги видео
+voiceover[]: array of integers	Озвучки видео
+page: integer	Номер страницы (по умолчанию: 1)
+limit: integer	Количество записей на странице (по умолчанию: 20)
+updated_from: string	Дата в формате ISO 8601. Возвращает только видео, изменённые после указанной даты.
+Пример: 2026-06-28T14:30:00
+
+Ответ:
+
+data: array
+
+Массив объектов VideoLinkResource
+- id: integer	ID видео
+- name: string	Название видео
+- name_rus: string	Название на русском (может быть null)
+- name_eng: string	Название на английском (может быть null)
+- type: string	Тип видео
+- year: integer	Год выпуска (может быть null)
+- kp_id: integer	ID на Кинопоиске (может быть null)
+- imdb_id: string	ID на IMDb (может быть null)
+- iframe_url: string	URL фрейма
+- poster_url: string	URL постера (может быть null)
+- quality: string	Качество видео
+- uploaded_at: string	Дата добавления
+links: object	Ссылки пагинации
+- first: string	URL первой страницы
+- last: string	URL последней страницы
+- prev: string|null	URL предыдущей страницы (может быть null)
+- next: string|null	URL следующей страницы (может быть null)
+meta: object	Метаданные пагинации
+- current_page: integer	Текущая страница
+- from: integer	Начальный индекс записей
+- last_page: integer	Последняя страница
+- links: array	Ссылки для навигации
+-- url: string|null	URL страницы (может быть null)
+-- label: string	Подпись ссылки
+-- active: boolean	Активна ли ссылка
+- path: string	Базовый путь
+- per_page: integer	Записей на странице
+- to: integer	Конечный индекс записей
+- total: integer	Всего записей
+success: boolean	Успех операции
+message: string	Сообщение
+
+
+GET /api/v1/publisher/videos/get_kpids - Получить список kp_id
+
+Параметры:
+
+type: string	Тип видео: movie или serial
+category[]: array of integers	Категории видео
+year: integer	Год выпуска
+page: integer	Номер страницы (по умолчанию: 1)
+limit: integer	Количество записей (по умолчанию: 1000)
+
+Ответ:
+
+data: array of integers
+
+Массив Kinopoisk ID
+success: boolean	Успех операции
+message: string	Сообщение
+status: integer	HTTP статус
+
+
+GET /api/v1/publisher/videos/categories - Получить список категорий
+
+Ответ:
+
+data: array
+
+Массив категорий
+- id: integer	ID категории
+Пример: 100
+- name: string	Название категории (может быть null)
+Пример: "Аниме"
+success: boolean	Успех операции
+message: string	Сообщение
+
+
+GET /api/v1/publisher/videos/genres - Получить список жанров
+
+Ответ:
+
+data: array
+
+Список жанров видео
+- id: integer	ID жанра
+Пример: 100
+- name: string	Название жанра на русском (может быть null)
+Пример: комедия
+- name_eng: string	Название жанра на английском (может быть null)
+Пример: comedy
+success: boolean	Флаг, указывающий успешность запроса
+message: string	Сообщение о результате выполнения запроса
+
+
+GET /api/v1/publisher/videos/countries - Получить список стран
+
+Ответ:
+
+data: array
+
+Список стран видео
+- id: integer	ID страны
+Пример: 100
+- name: string	Название страны на русском (может быть null)
+Пример: Россия
+- name_eng: string	Название страны на английском (может быть null)
+Пример: Russia
+- code: string	Код страны (может быть null)
+Пример: RU
+success: boolean	Флаг, указывающий успешность запроса
+message: string	Сообщение о результате выполнения запроса
+
+
+GET /api/v1/publisher/videos/tags - Получить список тегов
+
+Ответ:
+
+data: array
+
+Список тегов видео
+- id: integer	ID тега
+Пример: 100
+- name: string	Название тега (может быть null)
+Пример: Новинка
+- code: string	Код тега (может быть null)
+Пример: novinka
+success: boolean	Флаг, указывающий успешность запроса
+message: string	Сообщение о результате выполнения запроса
+
+
+GET /api/v1/publisher/videos/voiceovers - Получить список озвучек
+
+Ответ:
+
+data: array
+
+Список озвучек
+- id: integer	ID озвучки
+Пример: 100
+- name: string	Название озвучки (может быть null)
+Пример: LostFilm
+success: boolean	Флаг, указывающий успешность запроса
+message: string	Сообщение о результате выполнения запроса
+
+
+GET /api/v1/serials/kp/{kpId} - Количество сезонов и серий по Киопоиск ID
+
+Параметры:
+
+kpId: integer	Kinopoisk ID видео (обязательный)
+Пример: 484488
+
+Ответ:
+
+id: integer	ID видео
+Пример: 100
+name: string	Название видео
+seasons: array|null	Список сезонов (может быть null)
+- name: string	Название сезона
+- series: array	Список серий
+-- id: integer	ID серии
+Пример: 100
+-- name: string	Название серии
+
+
+GET /api/v1/serials/imdb/{imdbId} - Количество сезонов и серий по IMDB ID
+
+Параметры:
+
+imdbId: string	IMDB ID видео (обязательный)
+Пример: tt1527186
+
+Ответ:
+
+id: integer	ID видео
+Пример: 100
+name: string	Название видео
+seasons: array|null	Список сезонов (может быть null)
+- name: string	Название сезона
+- series: array	Список серий
+-- id: integer	ID серии
+Пример: 100
+-- name: string	Название серии

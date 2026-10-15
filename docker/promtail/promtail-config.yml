@@ -1,0 +1,105 @@
+# ─────────────────────────────────────────────────────────────
+#  KINOOX — Promtail: сбор логов Docker и системных журналов
+#  Отправляет всё в Loki с метками контейнера.
+# ─────────────────────────────────────────────────────────────
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+    batchwait: 1s
+    batchsize: 1048576
+
+scrape_configs:
+
+  # Логи всех контейнеров KINOOX
+  - job_name: docker-containers
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+    relabel_configs:
+      # Оставляем только контейнеры KINOOX
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/kinoox-.*'
+        action: keep
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: container
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: stream
+      - source_labels: ['__meta_docker_container_label_kinoox_service']
+        target_label: service
+      - source_labels: ['__meta_docker_container_label_kinoox_tier']
+        target_label: tier
+      - source_labels: ['__meta_docker_container_id']
+        target_label: container_id
+      - target_label: host
+        replacement: kinoox-01
+    pipeline_stages:
+      # Логи API и Web пишутся в JSON (pino) — разбираем поля
+      - json:
+          expressions:
+            level: level
+            msg: msg
+            time: time
+            reqId: reqId
+      - labels:
+          level:
+      - timestamp:
+          source: time
+          format: RFC3339Nano
+          fallback_formats:
+            - RFC3339
+      - output:
+          source: msg
+
+  # Системные журналы хоста
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          host: kinoox-01
+          __path__: /var/log/*.log
+    pipeline_stages:
+      - drop:
+          expression: '.*(GET /health|GET /healthz).*'
+          drop_counter_reason: healthcheck
+
+  # Журналы Nginx — отдельная метка для быстрых запросов
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          service: proxy
+          host: kinoox-01
+          __path__: /var/lib/docker/volumes/kinoox_nginx_logs/_data/*.log
+
+  # Журнал systemd с высокой кардинальностью исключаем — только важные сообщения
+  - job_name: syslog
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+        host: kinoox-01
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: unit
+      - source_labels: ['__journal_priority_keyword']
+        target_label: priority
+    pipeline_stages:
+      - drop:
+          expression: '.*(Started Session|Stopping User Manager|Removed slice).*'

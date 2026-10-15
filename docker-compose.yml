@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: kinoox_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: kinoox
+      POSTGRES_USER: kinoox
+      POSTGRES_PASSWORD: kinoox_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kinoox
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kinoox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: kinoox_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kinoox
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Laravel PHP-FPM
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kinoox_app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    networks:
+      - kinoox
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: kinoox_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - kinoox
+    depends_on:
+      - app
+
+  # Node.js для сборки фронтенда
+  node:
+    image: node:20-alpine
+    container_name: kinoox_node
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - kinoox
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  kinoox:
+    driver: bridge
